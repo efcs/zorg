@@ -94,7 +94,7 @@ def get_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std':'c++03'),
+            lit_extra_opts={'std':'c++03'}),
         'category': 'libcxx'},
     ]
 
