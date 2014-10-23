@@ -42,7 +42,8 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 
-def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extra_opts=[], lit_extra_opts=[]):
+def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
+                           cmake_extra_opts={}, lit_extra_opts={}):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -59,11 +60,29 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extr
 
     f = getLibcxxWholeTree(f, src_root)
 
-    litTestArgs = '-sv --show-unsupported --show-xfail'
-    litTestArgs += ' ' + ' '.join(lit_extra_opts)
+    if 'libcxxabi-has-no-threads' in additional_features:
+        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
+                           ' -DLIBCXXABI_HAS_NO_THREADS=1')
 
-    cmake_opts = ['-DLLVM_LIT_ARGS='+litTestArgs]
-    cmake_opts += cmake_extra_opts
+    if 'libcpp-has-no-threads' in additional_features:
+        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
+                           ' -D_LIBCPP_HAS_NO_THREADS')
+
+    if 'libcpp-has-no-monotonic-clock' in additional_features:
+        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
+                           ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
+
+    litTestArgs = ['-sv', '--show-unsupported', '--show-xfail']
+    if additional_features:
+        litTestArgs.append('--param=additional_features=' +
+                       ','.join(additional_features))
+
+    for key in lit_extra_opts:
+        litTestArgs.append('--param=' + key + '=' + lit_extra_opts[key])
+
+    cmake_opts = ['-DLLVM_LIT_ARGS="%s"' % ' '.join(litTestArgs)]
+    for key in cmake_extra_opts:
+        cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
 
     # Nuke/remake build directory and run CMake
     f.addStep(buildbot.steps.shell.ShellCommand(

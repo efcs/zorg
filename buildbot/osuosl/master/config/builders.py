@@ -60,29 +60,33 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'}),
         'category': 'libcxx'},
+
         {'name': 'asan-builder',
          'slavenames': ['my_buildslave'],
          'builddir' : 'asan-build',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts=['-DLLVM_USE_SANITIZER=Address']),
+            cmake_extra_opts={'LLVM_USE_SANITIZER':'Address'}),
         'category': 'libcxx'},
+
         {'name': 'msan-builder',
          'slavenames': ['my_buildslave'],
          'builddir' : 'msan-build',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts=['-DLLVM_USE_SANITIZER=MemoryWithOrigins']),
+            cmake_extra_opts={'LLVM_USE_SANITIZER':'MemoryWithOrigins'}),
         'category': 'libcxx'},
+
         {'name': 'ubsan-builder',
          'slavenames': ['my_buildslave'],
          'builddir' : 'ubsan-build',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts=['-DLLVM_USE_SANITIZER=Undefined']),
+            cmake_extra_opts={'LLVM_USE_SANITIZER':'Undefined'}),
+
         'category': 'libcxx'},
         {'name': 'cxx03-builder',
          'slavenames': ['my_buildslave'],
@@ -90,7 +94,7 @@ def get_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts=['--param=std=c++03']),
+            lit_extra_opts={'std':'c++03'),
         'category': 'libcxx'},
     ]
 
