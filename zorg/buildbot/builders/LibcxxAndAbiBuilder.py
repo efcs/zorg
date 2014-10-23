@@ -78,7 +78,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
                        ','.join(additional_features))
 
     for key in lit_extra_opts:
-        litTestArgs += (' --param=' + key + ' ' + lit_extra_opts[key])
+        litTestArgs += (' --param=' + key + '=' + lit_extra_opts[key])
 
     cmake_opts = ['-DLLVM_LIT_ARGS='+litTestArgs]
     for key in cmake_extra_opts:
