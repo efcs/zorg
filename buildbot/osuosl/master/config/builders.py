@@ -86,8 +86,8 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_USE_SANITIZER':'Undefined'}),
-
         'category': 'libcxx'},
+
         {'name': 'cxx03-builder',
          'slavenames': ['my_buildslave'],
          'builddir' : 'cxx03-build',
@@ -95,6 +95,15 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             lit_extra_opts={'std':'c++03'}),
+        'category': 'libcxx'},
+
+        {'name': 'cxx14-builder',
+         'slavenames': ['my_buildslave'],
+         'builddir' : 'cxx14-build',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            lit_extra_opts={'std':'c++14'}),
         'category': 'libcxx'},
     ]
 

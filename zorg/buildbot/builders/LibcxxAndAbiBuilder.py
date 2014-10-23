@@ -72,15 +72,15 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
         env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
                            ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
 
-    litTestArgs = ['-sv', '--show-unsupported', '--show-xfail']
+    litTestArgs = '-sv --show-unsupported --show-xfail'
     if additional_features:
-        litTestArgs.append('--param=additional_features=' +
+        litTestArgs += (' --param=additional_features=' +
                        ','.join(additional_features))
 
     for key in lit_extra_opts:
-        litTestArgs.append('--param=' + key + '=' + lit_extra_opts[key])
+        litTestArgs += (' --param=' + key + ' ' + lit_extra_opts[key])
 
-    cmake_opts = ['-DLLVM_LIT_ARGS="%s"' % ' '.join(litTestArgs)]
+    cmake_opts = ['-DLLVM_LIT_ARGS='+litTestArgs]
     for key in cmake_extra_opts:
         cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
 
