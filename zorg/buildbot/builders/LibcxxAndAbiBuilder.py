@@ -72,7 +72,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
         env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
                            ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
 
-    litTestArgs = '-sv --show-unsupported --show-xfail'
+    litTestArgs = '-sv --show-unsupported --show-xfail --threads=4'
     if additional_features:
         litTestArgs += (' --param=additional_features=' +
                        ','.join(additional_features))
