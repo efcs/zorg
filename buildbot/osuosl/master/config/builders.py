@@ -225,7 +225,7 @@ def _get_clang_builders():
          'builddir':"clang-native-arm-lnt-perf",
          'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
                                               nt_flags=['--cflag', '-mcpu=cortex-a15',
-                                                        '--threads=1', '--build-threads=2',
+                                                        '--threads=1', '--build-threads=2', '--use-perf',
                                                         '--benchmarking-only', '--multisample=8'],
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               submitURL='http://llvm.org/perf/submitRun',
@@ -338,6 +338,19 @@ def _get_clang_builders():
                                                                test=False,
                                                                xfails=clang_x86_64_freebsd_xfails)},
 
+        # Mips check-all with CMake builder
+        # We currently have to force CMAKE_HOST_TRIPLE and
+        # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+        # correct for the processor but it's currently not possible to emit O32
+        # code using a mips64-* triple. This is a bug and should be fixed soon.
+        {'name': "clang-cmake-mips",
+         'slavenames':["mips-kl-m001"],
+         'builddir':"clang-cmake-mips",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                         clean=False,
+                         extra_cmake_args=["-DCMAKE_HOST_TRIPLE=mips-unknown-linux-gnu",
+                                           "-DCMAKE_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
+
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
          'slavenames' :["as-bldslv9"],
@@ -391,7 +404,7 @@ def _get_clang_builders():
          'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5", "pollyperf15"],
          'builddir':"perf-x86_64-penryn-O3",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10'],
+                                                    nt_flags=['--multisample=10', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
@@ -516,51 +529,59 @@ def _get_polly_builders():
          'builddir':"polly-amd64-linux",
          'factory': PollyBuilder.getPollyBuildFactory()},
 
-        {'name': "perf-x86_64-penryn-O3-polly",
+        {'name': "perf-x86_64-penryn-O3-polly-fast",
+         'slavenames':["pollyperf10"],
+         'builddir': "perf-x86_64-penryn-O3-polly-fast",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '-j16' ],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-fast')},
+
+        {'name': "perf-x86_64-penryn-O3-polly-parallel-fast",
          'slavenames':["pollyperf6"],
+         'builddir': "perf-x86_64-penryn-O3-polly-parallel-fast",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j16', '--cflag=-lgomp' ],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-parallel-fast')},
+
+        {'name': "perf-x86_64-penryn-O3-polly-detect-only",
+         'slavenames':["pollyperf14"],
+         'builddir':"perf-x86_64-penryn-O3-polly-detect-only",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none', '--mllvm=-polly-run-dce=false', '--rerun'],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-detect-only')},
+
+        {'name': "perf-x86_64-penryn-O3-polly-detect-and-dependences-only",
+         'slavenames':["pollyperf7"],
+         'builddir':"perf-x86_64-penryn-O3-polly-detect-and-dependences-only",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=10',
+                                                              '--mllvm=-polly',
+                                                              '--mllvm=-polly-optimizer=none',
+                                                              '--mllvm=-polly-code-generator=none',
+                                                              '--rerun'],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-detect-and-dependences-only')},
+
+        {'name': "perf-x86_64-penryn-O3-polly",
+         'slavenames':["pollyperf11"],
          'builddir':"perf-x86_64-penryn-O3-polly",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly')},
-        {'name': "perf-x86_64-penryn-O3-polly-codegen-isl",
-         'slavenames':["pollyperf7"],
-         'builddir':"perf-x86_64-penryn-O3-polly-codegen-isl",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-codegen-isl')},
-        {'name': "perf-x86_64-penryn-O3-polly-scev",
-         'slavenames':["pollyperf10"],
-         'builddir':"perf-x86_64-penryn-O3-polly-scev",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-codegen-scev'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-scev')},
-        {'name': "perf-x86_64-penryn-O3-polly-scev-codegen-isl",
-         'slavenames':["pollyperf11"],
-         'builddir':"perf-x86_64-penryn-O3-polly-svev-codegen-isl",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl', '--mllvm=-polly-codegen-scev'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-scev-codegen-isl')},
-        {'name': "perf-x86_64-penryn-O3-polly-detect",
-         'slavenames':["pollyperf14"],
-         'builddir':"perf-x86_64-penryn-O3-polly-detect",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none', '--mllvm=-polly-run-dce=false'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-detect')}
+                                                    testerName='x86_64-penryn-O3-polly')}
        ]
 
 # Offline.
@@ -583,12 +604,6 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
                                                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-
-        {'name': "lldb-x86_64-darwin12",
-         'slavenames': ["lab-mini-02"],
-         'builddir': "build.lldb-x86_64-darwin12",
-         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
-
         {'name': "lldb-x86_64-freebsd",
          'slavenames': ["as-bldslv5"],
          'builddir': "lldb-x86_64-freebsd",
@@ -661,7 +676,7 @@ def _get_sanitizer_builders():
            'builddir':"sanitizer_x86_64-freebsd",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                                           clean=True,
-                                          sanitizers=['sanitizer','asan','lsan','ubsan'],
+                                          sanitizers=['sanitizer','asan','lsan','tsan','ubsan'],
                                           common_cmake_options='-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt')},
 
           {'name': "sanitizer-ppc64-linux1",
@@ -738,14 +753,61 @@ def _get_libcxx_builders():
             lit_extra_opts={'std':'c++14'}),
         'category': 'libcxx'},
 
-        # Cortex-A15 LibC++ and LibC++abi tests
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
+         'slavenames': ['ericwf-osx-slave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': 'clang', 'CXX': 'clang++'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
+         'slavenames': ['ericwf-osx-slave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': '/opt/llvm-tot/bin/clang',
+                 'CXX': '/opt/llvm-tot/bin/clang++'}),
+        'category': 'libcxx'},
+
+        # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-arm-linux',
          'slavenames': ['linaro-chrome-01'],
          'builddir': 'libcxx-libcxxabi-arm-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True'})},
+            # FIXME: there should be a way to merge autodetected with user-defined linker flags
+            # See: libcxxabi/test/lit.cfg
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
+            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True',
+                              'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
+                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15'})},
     ]
 
 
@@ -967,3 +1029,7 @@ LabPackageCache = 'http://10.1.1.2/packages/'
                     extra_configure_args=['--enable-shared'],
                     timeout=600),
  'category' : 'llvm'},
+{'name': "lldb-x86_64-darwin12",
+'slavenames': ["lab-mini-02"],
+'builddir': "build.lldb-x86_64-darwin12",
+'factory': LLDBBuilder.getLLDBxcodebuildFactory()},

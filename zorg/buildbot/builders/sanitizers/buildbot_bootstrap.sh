@@ -17,6 +17,12 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   rm -rf llvm_build0
 fi
 
+MEMORY_SANITIZER_KIND="Memory"
+BUILDBOT_MSAN_ORIGINS=${BUILDBOT_MSAN_ORIGINS:-}
+if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
+    MEMORY_SANITIZER_KIND="MemoryWithOrigins"
+fi
+
 # CMake does not notice that the compiler itself has changed.
 # Anyway, incremental builds of stage2 and stage3 compilers don't make sense.
 # Clobber the build trees.
@@ -33,7 +39,7 @@ LIBCXX=$LLVM/projects/libcxx
 
 type -a gcc
 type -a g++
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON"
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=3"
 CMAKE_STAGE1_OPTIONS="${CMAKE_COMMON_OPTIONS}"
 
 echo @@@BUILD_STEP update@@@
@@ -69,7 +75,7 @@ fi
 LIBCXX_INST=${LIBCXX}/inst
 (cd libcxx_build_msan && \
   cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
-    -DLLVM_USE_SANITIZER=Memory \
+    -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
     -DLIBCXX_CXX_ABI=libstdc++ \
     -DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="/usr/local/include/c++/4.9.1;/usr/local/include/c++/4.9.1/x86_64-unknown-linux-gnu" \
     -DCMAKE_INSTALL_PREFIX=${LIBCXX_INST} \
@@ -86,7 +92,7 @@ MSAN_LINK_FLAGS="-lc++ -Wl,--rpath=${LIBCXX_INST}/lib -L${LIBCXX_INST}/lib"
 
 (cd llvm_build_msan && \
  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
-   -DLLVM_USE_SANITIZER=Memory \
+   -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
    -DCMAKE_C_FLAGS="${MSAN_INCLUDE_FLAGS}" \
    -DCMAKE_CXX_FLAGS="${MSAN_INCLUDE_FLAGS}" \
    -DCMAKE_EXE_LINKER_FLAGS="${MSAN_LINK_FLAGS}" \
@@ -111,8 +117,7 @@ if [ ! -d llvm_build2_msan ]; then
 fi
 
 CLANG_MSAN_PATH=$ROOT/llvm_build_msan/bin
-CMAKE_STAGE3_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS}"
-CMAKE_STAGE3_MSAN_OPTIONS="${CMAKE_STAGE3_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_MSAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_MSAN_PATH}/clang++"
+CMAKE_STAGE3_MSAN_OPTIONS="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_MSAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_MSAN_PATH}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=15"
 
 (cd llvm_build2_msan && cmake ${CMAKE_STAGE3_MSAN_OPTIONS} $LLVM && ninja) || \
   echo @@@STEP_FAILURE@@@
@@ -162,8 +167,7 @@ if [ ! -d llvm_build2_asan ]; then
 fi
 
 CLANG_ASAN_PATH=$ROOT/llvm_build_asan/bin
-CMAKE_STAGE3_COMMON_OPTIONS="${CMAKE_STAGE2_COMMON_OPTIONS}"
-CMAKE_STAGE3_ASAN_OPTIONS="${CMAKE_STAGE3_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_ASAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_ASAN_PATH}/clang++"
+CMAKE_STAGE3_ASAN_OPTIONS="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_ASAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_ASAN_PATH}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=10"
 
 (cd llvm_build2_asan && cmake ${CMAKE_STAGE3_ASAN_OPTIONS} $LLVM && ninja) || \
   echo @@@STEP_FAILURE@@@
