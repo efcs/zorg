@@ -17,6 +17,12 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   rm -rf llvm_build0
 fi
 
+MEMORY_SANITIZER_KIND="Memory"
+BUILDBOT_MSAN_ORIGINS=${BUILDBOT_MSAN_ORIGINS:-}
+if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
+    MEMORY_SANITIZER_KIND="MemoryWithOrigins"
+fi
+
 # CMake does not notice that the compiler itself has changed.
 # Anyway, incremental builds of stage2 and stage3 compilers don't make sense.
 # Clobber the build trees.
@@ -29,11 +35,10 @@ rm -rf llvm_build_ubsan
 
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM=$ROOT/llvm
-LIBCXX=$LLVM/projects/libcxx
 
 type -a gcc
 type -a g++
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON"
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=3"
 CMAKE_STAGE1_OPTIONS="${CMAKE_COMMON_OPTIONS}"
 
 echo @@@BUILD_STEP update@@@
@@ -45,8 +50,9 @@ echo @@@BUILD_STEP build stage1 clang@@@
 if [ ! -d llvm_build0 ]; then
   mkdir llvm_build0
 fi
+# Build cxx/cxxabi to fool the compiler check in MSan stage 2.
 (cd llvm_build0 && cmake ${CMAKE_STAGE1_OPTIONS} $LLVM && \
-  ninja clang && ninja compiler-rt && ninja llvm-symbolizer) || \
+  ninja clang compiler-rt llvm-symbolizer) || \
   echo @@@STEP_FAILURE@@@
 
 CLANG_PATH=$ROOT/llvm_build0/bin
@@ -66,30 +72,33 @@ if [ ! -d libcxx_build_msan ]; then
   mkdir libcxx_build_msan
 fi
 
-LIBCXX_INST=${LIBCXX}/inst
 (cd libcxx_build_msan && \
-  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
-    -DLLVM_USE_SANITIZER=Memory \
-    -DLIBCXX_CXX_ABI=libstdc++ \
-    -DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="/usr/local/include/c++/4.9.1;/usr/local/include/c++/4.9.1/x86_64-unknown-linux-gnu" \
-    -DCMAKE_INSTALL_PREFIX=${LIBCXX_INST} \
-    ${LIBCXX} && \
-  ninja install) || echo @@@STEP_FAILURE@@@
+  cmake \
+    ${CMAKE_STAGE2_COMMON_OPTIONS} \
+    -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
+    $LLVM && \
+  ninja cxx cxxabi) || echo @@@STEP_FAILURE@@@
+
 
 echo @@@BUILD_STEP build clang/msan@@@
 if [ ! -d llvm_build_msan ]; then
   mkdir llvm_build_msan
 fi
 
-MSAN_INCLUDE_FLAGS="-I${LIBCXX_INST}/include/c++/v1"
-MSAN_LINK_FLAGS="-lc++ -Wl,--rpath=${LIBCXX_INST}/lib -L${LIBCXX_INST}/lib"
+MSAN_CFLAGS="-I${ROOT}/libcxx_build_msan/include"
+MSAN_CXXFLAGS="$MSAN_CFLAGS -stdlib=libc++"
+MSAN_LDFLAGS="-stdlib=libc++ -lc++abi -Wl,--rpath=${ROOT}/libcxx_build_msan/lib -L${ROOT}/libcxx_build_msan/lib"
 
+# The LDFLAGS setting below does not affect the build itself, but it is used in the CMake compiler check.
+# CMAKE_EXE_LINKER_FLAGS, on the other hand, affects the rest of the build, but not the compiler check.
+# This is crazy.
 (cd llvm_build_msan && \
+ LDFLAGS="${MSAN_LDFLAGS} -fsanitize=memory" \
  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
-   -DLLVM_USE_SANITIZER=Memory \
-   -DCMAKE_C_FLAGS="${MSAN_INCLUDE_FLAGS}" \
-   -DCMAKE_CXX_FLAGS="${MSAN_INCLUDE_FLAGS}" \
-   -DCMAKE_EXE_LINKER_FLAGS="${MSAN_LINK_FLAGS}" \
+   -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
+   -DCMAKE_C_FLAGS="${MSAN_CFLAGS}" \
+   -DCMAKE_CXX_FLAGS="${MSAN_CXXFLAGS}" \
+   -DCMAKE_EXE_LINKER_FLAGS="${MSAN_LDFLAGS}" \
    $LLVM && \
  ninja clang) || echo @@@STEP_FAILURE@@@
 
@@ -111,8 +120,7 @@ if [ ! -d llvm_build2_msan ]; then
 fi
 
 CLANG_MSAN_PATH=$ROOT/llvm_build_msan/bin
-CMAKE_STAGE3_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS}"
-CMAKE_STAGE3_MSAN_OPTIONS="${CMAKE_STAGE3_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_MSAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_MSAN_PATH}/clang++"
+CMAKE_STAGE3_MSAN_OPTIONS="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_MSAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_MSAN_PATH}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=15"
 
 (cd llvm_build2_msan && cmake ${CMAKE_STAGE3_MSAN_OPTIONS} $LLVM && ninja) || \
   echo @@@STEP_FAILURE@@@
@@ -162,8 +170,7 @@ if [ ! -d llvm_build2_asan ]; then
 fi
 
 CLANG_ASAN_PATH=$ROOT/llvm_build_asan/bin
-CMAKE_STAGE3_COMMON_OPTIONS="${CMAKE_STAGE2_COMMON_OPTIONS}"
-CMAKE_STAGE3_ASAN_OPTIONS="${CMAKE_STAGE3_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_ASAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_ASAN_PATH}/clang++"
+CMAKE_STAGE3_ASAN_OPTIONS="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_ASAN_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_ASAN_PATH}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=10"
 
 (cd llvm_build2_asan && cmake ${CMAKE_STAGE3_ASAN_OPTIONS} $LLVM && ninja) || \
   echo @@@STEP_FAILURE@@@
