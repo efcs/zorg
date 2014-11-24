@@ -11,6 +11,8 @@ import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.util.phasedbuilderutils as phased_builder_utils
 
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+
 reload(lit_test_command)
 reload(artifacts)
 reload(phased_builder_utils)
@@ -116,8 +118,11 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
         workdir=build_path))
 
     # Test libc++
-    f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxx', command=['make', 'check-libcxx'],
+    f.addStep(LitTestCommand(
+        name = 'test.libcxx',
+        command = ['make', 'check-libcxx'],
+        description=['Testing', 'libcxx'],
+        descriptionDone=['test', 'libcxx'],
         workdir=build_path))
 
     return f
