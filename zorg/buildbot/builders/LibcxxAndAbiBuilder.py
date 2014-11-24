@@ -113,10 +113,6 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
               haltOnFailure=True, workdir=build_path))
 
     # Test libc++abi
-    f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxxabi', command=['make', 'check-libcxxabi'],
-        workdir=build_path))
-
     f.addStep(LitTestCommand(
         name            = 'test.libcxxabi',
         command         = ['make', 'check-libcxxabi'],
