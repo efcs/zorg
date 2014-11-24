@@ -117,12 +117,19 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
         name='test.libcxxabi', command=['make', 'check-libcxxabi'],
         workdir=build_path))
 
+    f.addStep(LitTestCommand(
+        name            = 'test.libcxxabi',
+        command         = ['make', 'check-libcxxabi'],
+        description     = ['testing', 'libcxxabi'],
+        descriptionDone = ['test', 'libcxxabi'],
+        workdir         = build_path))
+
     # Test libc++
     f.addStep(LitTestCommand(
-        name = 'test.libcxx',
-        command = ['make', 'check-libcxx'],
-        description=['Testing', 'libcxx'],
-        descriptionDone=['test', 'libcxx'],
-        workdir=build_path))
+        name            = 'test.libcxx',
+        command         = ['make', 'check-libcxx'],
+        description     = ['testing', 'libcxx'],
+        descriptionDone = ['test', 'libcxx'],
+        workdir         = build_path))
 
     return f
