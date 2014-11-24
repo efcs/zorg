@@ -268,20 +268,6 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
-        ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
-        {'name': "clang-cmake-armv7-a15-full",
-         'slavenames':["linaro-a15-03"],
-         'builddir':"clang-cmake-armv7-a15-full",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
-                      clean=False,
-                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
-
-
         {'name': "clang-native-mingw32-win7",
          'slavenames':["as-bldslv7"],
          'builddir':"clang-native-mingw32-win7",
@@ -348,8 +334,9 @@ def _get_clang_builders():
          'builddir':"clang-cmake-mips",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                          clean=False,
-                         extra_cmake_args=["-DCMAKE_HOST_TRIPLE=mips-unknown-linux-gnu",
-                                           "-DCMAKE_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
+                         checkout_compiler_rt=False,
+                         extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
+                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
@@ -683,6 +670,19 @@ def _get_sanitizer_builders():
            'slavenames' :["sanitizer-ppc64-1"],
            'builddir': "sanitizer-ppc64-1",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+          ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
+          {'name': "clang-cmake-armv7-a15-full",
+           'slavenames':["linaro-a15-03"],
+           'builddir':"clang-cmake-armv7-a15-full",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        jobs=4,
+                        clean=False,
+                        env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])}
 
           ]
 
