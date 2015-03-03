@@ -38,6 +38,10 @@ from zorg.buildbot.builders import SanitizerBuilderII
 reload(SanitizerBuilderII)
 from zorg.buildbot.builders import SanitizerBuilderII
 
+from zorg.buildbot.builders import SanitizerBuilderWindows
+reload(SanitizerBuilderWindows)
+from zorg.buildbot.builders import SanitizerBuilderWindows
+
 from zorg.buildbot.builders import Libiomp5Builder
 reload(Libiomp5Builder)
 from zorg.buildbot.builders import Libiomp5Builder
@@ -49,6 +53,10 @@ from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
 reload(SphinxDocsBuilder)
 from zorg.buildbot.builders import SphinxDocsBuilder
+
+from zorg.buildbot.builders import ABITestsuitBuilder
+reload(ABITestsuitBuilder)
+from zorg.buildbot.builders import ABITestsuitBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -62,6 +70,11 @@ def _get_llvm_builders():
          'slavenames':["chinook"],
          'builddir':"llvm-ppc64",
          'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20)},
+
+        {'name': "ppc64le-llvm",
+         'slavenames':["ppc64le-llvm"],
+         'builddir':"llvm-ppc64le-1",
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=4, clean=False, timeout=20)},
 
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
@@ -86,7 +99,6 @@ def _get_llvm_builders():
          'slavenames':["aarch64-foundation"],
          'builddir':"llvm-aarch64-linux",
          'factory': LLVMBuilder.getLLVMBuildFactory(config_name='Release+Asserts',
-                                                    outOfDir=True,
                                                     extra_configure_args=["--host=aarch64-linux-gnu"])},
         {'name': "llvm-hexagon-elf",
          'slavenames':["hexagon-build-03"],
@@ -161,8 +173,7 @@ def _get_clang_fast_builders():
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
                          'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'},
                     stage1_config='Release+Asserts',
-                    checkout_compiler_rt=True,
-                    outOfDir=True)},
+                    checkout_compiler_rt=True)},
 
         {'name': "llvm-clang-lld-x86_64-debian-fast",
          'slavenames':["gribozavr4"],
@@ -196,7 +207,8 @@ def _get_clang_builders():
         {'name': "clang-atom-d525-fedora-rel",
          'slavenames':["atom1-buildbot"],
          'builddir':"clang-atom-d525-fedora-rel",
-         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts')},
+         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts',
+                                                       extra_configure_args=['--with-intel-jitevents'])},
 
 #        {'name': "clang-x86_64-ubuntu",
 #         'slavenames':["arxan_raphael"],
@@ -225,7 +237,7 @@ def _get_clang_builders():
          'builddir':"clang-native-arm-lnt-perf",
          'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
                                               nt_flags=['--cflag', '-mcpu=cortex-a15',
-                                                        '--threads=1', '--build-threads=2',
+                                                        '--threads=1', '--build-threads=2', '--use-perf',
                                                         '--benchmarking-only', '--multisample=8'],
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               submitURL='http://llvm.org/perf/submitRun',
@@ -240,6 +252,21 @@ def _get_clang_builders():
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               testerName='LNT-TestOnly-O3', run_cxx_tests=True)},
 
+        ## Cortex-A15 check-all self-host NEON with CMake builder
+        {'name': "clang-cmake-armv7-a15-selfhost-neon",
+         'slavenames':["linaro-chrome-04"],
+         'builddir':"clang-cmake-armv7-a15-selfhost-neon",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=4,
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      useTwoStage=True,
+                      testStage1=True,
+                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      extra_cmake_args=["-DCMAKE_C_FLAGS=-mcpu=cortex-a15",
+                                        "-DCMAKE_CXX_FLAGS=-mcpu=cortex-a15",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+
         ## Cortex-A15 check-all with CMake builder
         {'name': "clang-cmake-armv7-a15",
          'slavenames':["linaro-a15-01"],
@@ -251,6 +278,19 @@ def _get_clang_builders():
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+
+        ## Cortex-A15 check-all with CMake T2 builder
+        {'name': "clang-cmake-thumbv7-a15",
+         'slavenames':["linaro-a15-04"],
+         'builddir':"clang-cmake-thumbv7-a15",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=4,
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -mthumb'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -mthumb'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## Cortex-A15 check-all self-host with CMake builder
@@ -268,20 +308,6 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
-        ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
-        {'name': "clang-cmake-armv7-a15-full",
-         'slavenames':["linaro-a15-03"],
-         'builddir':"clang-cmake-armv7-a15-full",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
-                      clean=False,
-                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
-
-
         {'name': "clang-native-mingw32-win7",
          'slavenames':["as-bldslv7"],
          'builddir':"clang-native-mingw32-win7",
@@ -289,6 +315,19 @@ def _get_clang_builders():
                                                        useTwoStage=True, test=False,
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
+
+#        # This will ultimately be a self-host bot, even though the config does
+#        # not reflect that today.
+#        {'name': 'clang-x86-win2008-selfhost',
+#         'slavenames': ['windows-gcebot1'],
+#         'builddir': 'clang-x86-win2008-selfhost',
+#         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+#                        triple='i686-pc-windows-msvc',
+#                        clean=False,
+#                        checkout_compiler_rt=False,
+#                        testStage1=True,
+#                        stage1_config='Release',
+#                        extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
         {'name' : "clang-ppc64-elf-linux",
          'slavenames' :["chinook-clangslave1"],
@@ -302,6 +341,23 @@ def _get_clang_builders():
          'slavenames' :["chinook-clangslave2"],
          'builddir' :"clang-ppc64-2",
          'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64-elf-linux',
+                                                       useTwoStage=True, test=True,
+                                                       checkout_compiler_rt=True,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts')},
+
+        {'name' : "ppc64le-clanglnt",
+         'slavenames' :["ppc64le-clanglnt"],
+         'builddir' :"clang-lnt-ppc64le-1",
+         'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
+                                              nt_flags=['--multisample=3','--cflag','-mcpu=native'],
+                                              jobs=4,  use_pty_in_tests=True,
+                                              testerName='ppc64le-plain', run_cxx_tests=True)},
+
+        {'name' : "ppc64le-clang",
+         'slavenames' :["ppc64le-clang"],
+         'builddir' :"clang-ppc64le-1",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64le-elf-linux',
                                                        useTwoStage=True, test=True,
                                                        checkout_compiler_rt=True,
                                                        stage1_config='Release+Asserts',
@@ -338,11 +394,31 @@ def _get_clang_builders():
                                                                test=False,
                                                                xfails=clang_x86_64_freebsd_xfails)},
 
+        # Mips check-all with CMake builder
+        # We currently have to force CMAKE_HOST_TRIPLE and
+        # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+        # correct for the processor but it's currently not possible to emit O32
+        # code using a mips64-* triple. This is a bug and should be fixed soon.
+        {'name': "clang-cmake-mips",
+         'slavenames':["mips-kl-m001"],
+         'builddir':"clang-cmake-mips",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                         clean=False,
+                         checkout_compiler_rt=False,
+                         extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
+                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
+
+        # ABI test-suite with CMake builder
+        {'name'       : "clang-x86_64-linux-selfhost-abi-test",
+         'slavenames' : ["as-bldslv8"],
+         'builddir'   : "clang-x86_64-linux-selfhost-abi-test",
+         'factory'    : ABITestsuitBuilder.getABITestsuitBuildFactory(jobs=64)},
+
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
          'slavenames' :["as-bldslv9"],
          'builddir' :"clang-x86_64-darwin13-cross-mingw32",
-         'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, use_pty_in_tests=True,
+         'factory' : ClangBuilder.getClangBuildFactory(use_pty_in_tests=True,
                                                        test=False,
                                                        env = { 'CC' : 'clang',
                                                                'CXX' : 'clang++',
@@ -354,7 +430,7 @@ def _get_clang_builders():
         {'name' : "clang-x86_64-darwin13-cross-arm",
          'slavenames' :["as-bldslv9"],
          'builddir' :"clang-x86_64-darwin13-cross-arm",
-         'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, use_pty_in_tests=True,
+         'factory' : ClangBuilder.getClangBuildFactory(use_pty_in_tests=True,
                                                        env = { 'CC' : 'clang',
                                                                'CXX' : 'clang++',
                                                                'CXXFLAGS' : '-stdlib=libc++'},
@@ -391,18 +467,33 @@ def _get_clang_builders():
          'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5", "pollyperf15"],
          'builddir':"perf-x86_64-penryn-O3",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10'],
+                                                    nt_flags=['--multisample=10', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3')},
-        {'name' : "clang-native-aarch64",
-         'slavenames' :["juno-aarch64-01"],
-         'builddir' :"clang-native-aarch64",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                     jobs=4,
-                     clean=False,
-                     checkout_compiler_rt=False)},
+        {'name' : "clang-x86_64-linux-selfhost-modules",
+         'slavenames' : ["modules-slave-1"],
+         'builddir' : "clang-x86_64-linux-selfhost-modules",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                       useTwoStage=True,
+                                                       modules=True,
+                                                       clean=False,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts',
+                                                       extra_configure_args=['-DCMAKE_C_COMPILER=clang',
+                                                                             '-DCMAKE_CXX_COMPILER=clang++',
+                                                                             '-DCMAKE_CXX_FLAGS=-stdlib=libc++'],
+                                                       cmake='cmake')},
+#        {'name' : "clang-native-aarch64",
+#         'slavenames' :["juno-aarch64-01"],
+#         'builddir' :"clang-native-aarch64",
+#         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+#                     jobs=4,
+#                     clean=False,
+#                     checkout_compiler_rt=False,
+#                     useTwoStage=True,
+#                     testStage1=True)},
         ]
 
 # Offline.
@@ -467,7 +558,7 @@ def _get_clang_builders():
 {'name' : "clang-x86_64-darwin11-cross-linux-gnu",
  'slavenames' :["as-bldslv11"],
  'builddir' :"clang-x86_64-darwin11-cross-linux-gnu",
- 'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4,  use_pty_in_tests=True,
+ 'factory' : ClangBuilder.getClangBuildFactory(jobs=4,  use_pty_in_tests=True,
                                                run_cxx_tests=True,
                                                extra_configure_args=['--build=x86_64-apple-darwin11',
                                                                      '--host=x86_64-apple-darwin11',
@@ -493,7 +584,7 @@ def _get_clang_builders():
 {'name': "clang-x86_64-darwin11-self-mingw32",
  'slavenames':["as-bldslv11"],
  'builddir':"clang-x86_64-darwin11-self-mingw32",
- 'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4, test=False,
+ 'factory' : ClangBuilder.getClangBuildFactory(jobs=4, test=False,
                                                        env = { 'PATH' : "/mingw_build_tools/install_with_gcc/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin",
                                                                'CC' : 'clang',
                                                                'CXX' : 'clang++',
@@ -516,51 +607,59 @@ def _get_polly_builders():
          'builddir':"polly-amd64-linux",
          'factory': PollyBuilder.getPollyBuildFactory()},
 
-        {'name': "perf-x86_64-penryn-O3-polly",
+        {'name': "perf-x86_64-penryn-O3-polly-fast",
+         'slavenames':["pollyperf10"],
+         'builddir': "perf-x86_64-penryn-O3-polly-fast",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '-j16' ],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-fast')},
+
+        {'name': "perf-x86_64-penryn-O3-polly-parallel-fast",
          'slavenames':["pollyperf6"],
+         'builddir': "perf-x86_64-penryn-O3-polly-parallel-fast",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j16', '--cflag=-lgomp' ],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-parallel-fast')},
+
+        {'name': "perf-x86_64-penryn-O3-polly-detect-only",
+         'slavenames':["pollyperf14"],
+         'builddir':"perf-x86_64-penryn-O3-polly-detect-only",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none', '--mllvm=-polly-run-dce=false', '--rerun'],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-detect-only')},
+
+        {'name': "perf-x86_64-penryn-O3-polly-detect-and-dependences-only",
+         'slavenames':["pollyperf7"],
+         'builddir':"perf-x86_64-penryn-O3-polly-detect-and-dependences-only",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=10',
+                                                              '--mllvm=-polly',
+                                                              '--mllvm=-polly-optimizer=none',
+                                                              '--mllvm=-polly-code-generator=none',
+                                                              '--rerun'],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-detect-and-dependences-only')},
+
+        {'name': "perf-x86_64-penryn-O3-polly",
+         'slavenames':["pollyperf11"],
          'builddir':"perf-x86_64-penryn-O3-polly",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly')},
-        {'name': "perf-x86_64-penryn-O3-polly-codegen-isl",
-         'slavenames':["pollyperf7"],
-         'builddir':"perf-x86_64-penryn-O3-polly-codegen-isl",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-codegen-isl')},
-        {'name': "perf-x86_64-penryn-O3-polly-scev",
-         'slavenames':["pollyperf10"],
-         'builddir':"perf-x86_64-penryn-O3-polly-scev",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-codegen-scev'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-scev')},
-        {'name': "perf-x86_64-penryn-O3-polly-scev-codegen-isl",
-         'slavenames':["pollyperf11"],
-         'builddir':"perf-x86_64-penryn-O3-polly-svev-codegen-isl",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl', '--mllvm=-polly-codegen-scev'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-scev-codegen-isl')},
-        {'name': "perf-x86_64-penryn-O3-polly-detect",
-         'slavenames':["pollyperf14"],
-         'builddir':"perf-x86_64-penryn-O3-polly-detect",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none', '--mllvm=-polly-run-dce=false'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-detect')}
+                                                    testerName='x86_64-penryn-O3-polly')}
        ]
 
 # Offline.
@@ -583,18 +682,42 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
                                                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-
-        {'name': "lldb-x86_64-darwin12",
-         'slavenames': ["lab-mini-02"],
-         'builddir': "build.lldb-x86_64-darwin12",
-         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
-
         {'name': "lldb-x86_64-freebsd",
          'slavenames': ["as-bldslv5"],
          'builddir': "lldb-x86_64-freebsd",
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     make='gmake',
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
+        {'name': "lldb-x86-windows-msvc",
+         'slavenames': ["zturner-win2008"],
+         'builddir': "lldb-windows-x86",
+         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
+        {'name': "lldb-x86-win7-msvc",
+         'slavenames': ["hexagon-build-01"],
+         'builddir': "builddir/lldb-win7-msvc",
+         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
+        {'name': "lldb-x86_64-ubuntu-14.10",
+         'slavenames': ["hexagon-build-03"],
+         'builddir': "lldb-x86_64-ubuntu-14.10",
+         'factory': LLDBBuilder.getLLDBBuildFactory(
+                    triple=None,
+                    extra_configure_args=[
+                        '--enable-cxx11',
+                        '--enable-optimized',
+                        '--enable-assertions'],
+                    env={'SHELL':"/bin/bash"})},
+        {'name': "lldb-x86_64-ubuntu-14.04-cmake",
+         'slavenames': ["lldb-build1-ubuntu-1404"],
+         'builddir': "buildWorkingDir",
+         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
+                    build_compiler="clang",
+                    test_compiler="clang",
+                    build_type="Debug",
+                    env={'SHELL':"/bin/bash"})},
+        {'name': "lldb-x86_64-darwin-13.4",
+         'slavenames': ["lldb-x86_64-darwin-13.4"],
+         'builddir': "buildDir",
+         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
        ]
 
 # Offline.
@@ -649,25 +772,83 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-x86_64-linux-bootstrap",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
-          #{'name': "llvm-clang-lld-x86_64-ubuntu-sanitize-address",
-          # 'slavenames':["hexagon-build-03"],
-          # 'builddir':"llvm-clang-lld-x86_64-ubuntu-sanitize-address",
-          # 'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-          #                                   buildWithSanitizerOptions=['-fsanitize=address'],
-          #                                   env={'PATH':'/usr/local/bin:/usr/bin:/bin'})},
+          {'name': "sanitizer-x86_64-linux-fast",
+           'slavenames' :["sanitizer-buildbot3"],
+           'builddir': "sanitizer-x86_64-linux-fast",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+          {'name': "sanitizer-x86_64-linux-autoconf",
+           'slavenames' :["sanitizer-buildbot4"],
+           'builddir': "sanitizer-x86_64-linux-autoconf",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+          {'name': "sanitizer-x86_64-linux-fuzzer",
+           'slavenames' :["sanitizer-buildbot5"],
+           'builddir': "sanitizer-x86_64-linux-fuzzer",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
           {'name': "sanitizer_x86_64-freebsd",
            'slavenames':["as-bldslv5"],
            'builddir':"sanitizer_x86_64-freebsd",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                                           clean=True,
-                                          sanitizers=['sanitizer','asan','lsan','ubsan'],
+                                          sanitizers=['sanitizer','asan','lsan','tsan','ubsan'],
                                           common_cmake_options='-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt')},
 
           {'name': "sanitizer-ppc64-linux1",
            'slavenames' :["sanitizer-ppc64-1"],
            'builddir': "sanitizer-ppc64-1",
-           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+           'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
+
+          {'name': "sanitizer-ppc64le-linux",
+           'slavenames' :["sanitizer-ppc64le-linux"],
+           'builddir': "sanitizer-ppc64le-1",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
+
+          {'name': "sanitizer-windows",
+           'slavenames' :["sanitizer-windows"],
+           'builddir': "sanitizer-windows",
+           'factory': SanitizerBuilderWindows.getSanitizerWindowsBuildFactory()},
+
+          ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
+          {'name': "clang-cmake-armv7-a15-full",
+           'slavenames':["linaro-a15-03"],
+           'builddir':"clang-cmake-armv7-a15-full",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        jobs=4,
+                        clean=False,
+                        env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+
+          ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
+          {'name': "clang-cmake-thumbv7-a15-full-sh",
+           'slavenames':["linaro-chrome-05"],
+           'builddir':"clang-cmake-thumbv7-a15-full-sh",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        jobs=4,
+                        clean=False,
+                        useTwoStage=True,
+                        testStage1=True,
+                        env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+
+          # TODO: Temporary fix. Remove this when the Clang bootstrapping with backtraces issue will be fixed.
+          {'name' : "clang-native-aarch64-full",
+           'slavenames' :["juno-aarch64-01"],
+           'builddir':"clang-native-aarch64-full",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        jobs=4,
+                        clean=False,
+                        useTwoStage=True,
+                        testStage1=True,
+                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
+                                          "-DLLVM_ENABLE_BACKTRACES='OFF'"])},
 
           ]
 
@@ -705,11 +886,12 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             additional_features=set(['libcxxabi-has-no-threads',
-                                      'libcpp-has-no-threads',
-                                      'libcpp-has-no-monotonic-clock'])),
+             cmake_extra_opts={'LIBCXX_ENABLE_THREADS': 'OFF',
+                               'LIBCXX_ENABLE_MONOTONIC_CLOCK': 'OFF',
+                               'LIBCXXABI_ENABLE_THREADS': 'OFF'}),
          'category': 'libcxx'},
 
+        # EricWF's builders on ericwf-buildslave
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu',
          'slavenames': ['ericwf-buildslave'],
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu',
@@ -718,14 +900,99 @@ def _get_libcxx_builders():
                  'CC': 'clang', 'CXX': 'clang++'}),
         'category': 'libcxx'},
 
-        # Cortex-A15 LibC++ and LibC++abi tests
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            lit_extra_opts={'std':'c++03'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            lit_extra_opts={'std':'c++14'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined'}),
+        'category': 'libcxx'},
+
+        # EricWF's builders on ericwf-buildslave2
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-noexceptions',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-noexceptions',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-nortti',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-nortti',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_ENABLE_RTTI': 'OFF'}),
+        'category': 'libcxx'},
+
+        # EricWF's builders on ericwf-osx-slave
+        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
+         'slavenames': ['ericwf-osx-slave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': 'clang', 'CXX': 'clang++'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
+         'slavenames': ['ericwf-osx-slave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': '/opt/llvm-tot/bin/clang',
+                 'CXX': '/opt/llvm-tot/bin/clang++'}),
+        'category': 'libcxx'},
+
+        # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-arm-linux',
          'slavenames': ['linaro-chrome-01'],
          'builddir': 'libcxx-libcxxabi-arm-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True'})},
+            # FIXME: there should be a way to merge autodetected with user-defined linker flags
+            # See: libcxxabi/test/lit.cfg
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
+            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True',
+                              'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
+                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15'})},
     ]
 
 
@@ -741,7 +1008,8 @@ def _get_experimental_builders():
         {'name': "clang-atom-d525-fedora",
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d525-fedora",
-         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared']),
+         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=["--enable-shared",
+                                                                             "--with-intel-jitevents"]),
          'category' : 'clang'},
 
         {'name': "clang-amd64-openbsd",
@@ -947,3 +1215,7 @@ LabPackageCache = 'http://10.1.1.2/packages/'
                     extra_configure_args=['--enable-shared'],
                     timeout=600),
  'category' : 'llvm'},
+{'name': "lldb-x86_64-darwin12",
+'slavenames': ["lab-mini-02"],
+'builddir': "build.lldb-x86_64-darwin12",
+'factory': LLDBBuilder.getLLDBxcodebuildFactory()},

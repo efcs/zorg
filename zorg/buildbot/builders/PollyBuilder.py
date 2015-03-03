@@ -9,48 +9,9 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.builders import LNTBuilder
 from zorg.buildbot.builders import ClangBuilder
 
-def installRequiredLibs(f, polly_src):
-
-    cloog_installdir = "cloog.install"
-
-    # Get Cloog and isl
-    checkout_cloog = polly_src + '/utils/checkout_cloog.sh'
-    cloog_srcdir = WithProperties("%s/cloog.src", "builddir")
-    f.addStep(ShellCommand(name="get-cloog",
-                           command=[checkout_cloog, cloog_srcdir],
-                           description="Get CLooG/isl source code",
-                           workdir="."))
-
-    confargs = []
-    confargs.append(WithProperties("%s/cloog.src/configure", "builddir"))
-    confargs.append(WithProperties("--prefix=%s/cloog.install", "builddir"))
-    f.addStep(Configure(name="cloog-configure",
-                        command=confargs,
-                        workdir=cloog_srcdir,
-                        description=['cloog-configure']))
-    f.addStep(ShellCommand(name="build-cloog",
-                               command=["make"],
-                               haltOnFailure=True,
-                               description=["build cloog"],
-                               workdir=cloog_srcdir))
-    f.addStep(ShellCommand(name="install-cloog",
-                               command=["make", "install"],
-                               haltOnFailure=True,
-                               description=["install cloog"],
-                               workdir=cloog_srcdir))
-
-def checkRequiredLibs(f, polly_src):
-    cloog_srcdir = WithProperties("%s/cloog.src", "builddir")
-    f.addStep(ShellCommand(name="check-cloog-isl",
-                               command=["make", "check"],
-                               haltOnFailure=True,
-                               description=["check cloog and isl"],
-                               workdir=cloog_srcdir))
-
 def getPollyBuildFactory():
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
-    cloog_installdir = "cloog.install"
     polly_srcdir = '%s/tools/polly' % llvm_srcdir
     clang_srcdir = '%s/tools/clang' % llvm_srcdir
 
@@ -78,19 +39,16 @@ def getPollyBuildFactory():
                   defaultBranch='trunk',
                   workdir=polly_srcdir))
 
-    # Install Prerequisites
-    installRequiredLibs(f, polly_srcdir)
-
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
                                command=["mkdir", "-p", llvm_objdir],
                                haltOnFailure=False,
                                description=["create build dir"],
                                workdir="."))
-    cloogpath = WithProperties("-DCMAKE_PREFIX_PATH=%%(builddir)s/%s"
-                                % cloog_installdir)
-    cmakeCommand = ["cmake", "../%s" %llvm_srcdir, cloogpath,
-		    "-DCMAKE_COLOR_MAKEFILE=OFF", "-DPOLLY_TEST_DISABLE_BAR=ON"]
+    cmakeCommand = ["cmake", "../%s" %llvm_srcdir,
+		    "-DCMAKE_COLOR_MAKEFILE=OFF", "-DPOLLY_TEST_DISABLE_BAR=ON",
+		    "-DCMAKE_BUILD_TYPE=Release"]
+
     f.addStep(ShellCommand(name="cmake-configure",
                                command=cmakeCommand,
                                haltOnFailure=False,
@@ -102,7 +60,6 @@ def getPollyBuildFactory():
                                haltOnFailure=True,
                                description=["build polly"],
                                workdir=llvm_objdir))
-    checkRequiredLibs(f, polly_srcdir)
     # Test Polly
     f.addStep(ShellCommand(name="test_polly",
                                command=["make", "polly-test"],
@@ -118,8 +75,6 @@ def getPollyBuildFactory():
     return f
 
 def AddExternalPollyBuildFactory(f, llvm_installdir):
-    cloog_installdir = 'cloog.install'
-
     polly_srcdir = 'polly.src'
     polly_objdir = 'polly.obj'
     polly_installdir = 'polly.install'
@@ -137,9 +92,6 @@ def AddExternalPollyBuildFactory(f, llvm_installdir):
                   defaultBranch='trunk',
                   workdir=polly_srcdir))
 
-    # Install Prerequisites
-    installRequiredLibs(f, polly_srcdir)
-
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
                                command=["mkdir", "-p", polly_objdir],
@@ -148,10 +100,8 @@ def AddExternalPollyBuildFactory(f, llvm_installdir):
                                workdir="."))
     cmakeCommand = ["cmake", "../%s" % polly_srcdir]
 
-    cmakeCommand.append(WithProperties("-DCMAKE_PREFIX_PATH=%%(builddir)s/%s"
-                        % cloog_installdir))
     cmakeCommand.append('-DLLVM_INSTALL_ROOT=../' + llvm_installdir)
-    cmakeCommand.append('-DCMAKE_BUILD_TYPE=../' + build_type)
+    cmakeCommand.append('-DCMAKE_BUILD_TYPE=' + build_type)
     cmakeCommand.append('-DCMAKE_INSTALL_PREFIX=../' + polly_installdir)
     cmakeCommand.append('-DCMAKE_COLOR_MAKEFILE=OFF')
 
@@ -189,7 +139,7 @@ def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
     llvm_install_dir = 'llvm.install.1'
 
     f = ClangBuilder.getClangBuildFactory(
-        triple, outOfDir=True, clean=clean, test=test,
+        triple, clean=clean, test=test,
         stage1_config='Release+Asserts', **kwargs)
 
     f.addStep(ShellCommand(name="install-llvm-and-clang",
@@ -205,9 +155,6 @@ def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
     nt_flags.append('--cflag=' + '-Xclang')
     nt_flags.append(WithProperties("--cflag=%s/polly.install/lib/LLVMPolly.so",
                                    'builddir'))
-
-    lnt_args['env'] = {'LD_LIBRARY_PATH': WithProperties("%s/cloog.install/lib",
-                                   'builddir')}
 
     # Add an LNT test runner.
     LNTBuilder.AddLNTTestsToFactory(f, nt_flags,

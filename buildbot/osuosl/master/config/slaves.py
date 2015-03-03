@@ -10,9 +10,6 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        # Quad Core Mac Pro running Lion.
-        create_slave("as-bldslv11", properties={'jobs' : 1}, max_builds=4),
-
         # Ubuntu pandaboard cortex-a9 slaves
         create_slave("as-bldslv1", properties={'jobs' : 2}, max_builds=1),
         create_slave("as-bldslv2", properties={'jobs' : 2}, max_builds=1),
@@ -37,36 +34,38 @@ def get_build_slaves():
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-03", properties={'jobs' : 2}, max_builds=1),
+        create_slave("linaro-chrome-04", properties={'jobs' : 2}, max_builds=1),
+        create_slave("linaro-chrome-05", properties={'jobs' : 2}, max_builds=1),
 
         create_slave("linaro-a15-01", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-02", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-03", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-a15-04", properties={'jobs' : 4}, max_builds=1),
+
+        create_slave("linaro-dragon-01", properties={'jobs' : 4}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
 
         # Intel(R) Core(TM)2 Quad CPU Q6600  @ 2.40GHz, Debian x86_64 GNU/Linux
-        create_slave("grosser2", properties={'jobs': 4}, max_builds=1),
-
-        # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
-        create_slave("botether", properties={'jobs': 2}, max_builds=1),
+        #create_slave("grosser2", properties={'jobs': 4}, max_builds=1),
 
         # Polly perf servers
         # Each is a:
         # 8 x Intel(R) Xeon(R) CPU E5430  @ 2.66GHz, Debian x86_64 GNU/Linux
-        create_slave("pollyperf1", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf1", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf2", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf3", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf4", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf5", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf6", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf7", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf8", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf9", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf8", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf9", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf10", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf11", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf12", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf13", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf12", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf13", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf14", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf15", properties={'jobs': 8}, max_builds=1),
 
@@ -74,29 +73,11 @@ def get_build_slaves():
         create_slave("atom-buildbot", properties={'jobs': 2}, max_builds=1),
         create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
 
+        # Windows 7 Intel(R) Xeon(R) CPU E5-2680 (2.80GHz), 16GB of RAM
+        create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
+
         # LLVM Lab slaves
-        create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),
-        create_slave("lab-mini-02", properties={'jobs': 2}, max_builds=1),
-        create_slave("lab-mini-03", properties={'jobs': 2}, max_builds=1),
-        create_slave("lab-mini-04", properties={'jobs': 2}, max_builds=1),
-        create_slave("xserve1", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve2", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve3", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve4", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve5", properties={'jobs': 4}, max_builds=1),
         create_slave("hpproliant1", properties={'jobs': 6}, max_builds=1),
-
-        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
-        create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
-
-        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
-        create_slave("arxan_raphael", properties={'jobs': 4}, max_builds=1),
-
-        # 2005 PowerPC Mac Mini, Mac OS X 10.5
-        #create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
-
-        # Intel(R) Core i7 920 @ 2.8GHz, 6 GB RAM, Windows 7 x64, Mingw64
-        create_slave("sschiffli1", properties={'jobs': 4}, max_builds=1),
 
         # POWER7 PowerPC (powerpc64), Fedora16.
         create_slave("chinook", properties={'jobs': 4}, max_builds=2),
@@ -110,15 +91,21 @@ def get_build_slaves():
 
         create_slave("sanitizer-ppc64-1", properties={'jobs': 4}, max_builds=1),
 
+        # ppc64le slaves.  
+        create_slave("ppc64le-llvm", properties={'jobs': 8}, max_builds=1),
+        create_slave("ppc64le-clang", properties={'jobs': 8}, max_builds=1),
+        create_slave("ppc64le-clanglnt", properties={'jobs': 8}, max_builds=1),
+        create_slave("sanitizer-ppc64le-linux", properties={'jobs': 8}, max_builds=1),
+
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
 
         # Windows 6.1.7601 x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-01", properties={'jobs': 4}, max_builds=2),
 
+        # TODO: This slave is idle for now. Review the usage later.
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
-        create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage':
-32},
+        create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
             max_builds=4),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
@@ -126,11 +113,14 @@ def get_build_slaves():
 32},
             max_builds=4),
 
-        # Cavium Octeon II V0.8, MIPS64 big endian, Debian squeeze (6.0.6)
+        # Cavium Octeon II V0.8, MIPS64r2 big endian, Debian squeeze (6.0.6)
         create_slave("mipsswbrd002", properties={'jobs' : 6}, max_builds=1),
 
+        # Cavium Octeon II V0.2, MIPS64r2 big endian, Debian Jessie
+        create_slave("mips-kl-m001", properties={'jobs' : 10}, max_builds=1),
+
         # Debian Testing x86-64, Intel(R) Core(TM) i7-2700K CPU @ 3.50GHz
-        create_slave("gribozavr1", properties={'jobs': 8}, max_builds=1),
+        #create_slave("gribozavr1", properties={'jobs': 8}, max_builds=1),
 
         # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU 5160 @ 3.00GHz
         create_slave("gribozavr2", properties={'jobs': 4}, max_builds=1),
@@ -144,9 +134,6 @@ def get_build_slaves():
         # Ubuntu 14.04 x86-64
         create_slave("gribozavr5", properties={'jobs': 6}, max_builds=1),
 
-        # Debian Testing x86-64, Intel Core i5-3570K (ivybridge) CPU @ 3.40GHz
-        create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
-
         # OpenBSD
         create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
 
@@ -159,18 +146,61 @@ def get_build_slaves():
         # AArch64 Clang, Juno ARM Development Platform
         create_slave("juno-aarch64-01", properties={'jobs': 4}, max_builds=1),
 
-        # Ubuntu x86-64, 12x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
-        create_slave("sanitizer-buildbot1", properties={'jobs': 8}, max_builds=1),
-        # Ubuntu x86-64, 24x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
-        create_slave("sanitizer-buildbot2", properties={'jobs': 8}, max_builds=1),
+        # Debian 7.7 x86_64 16-core GCE instance
+        create_slave("sanitizer-buildbot1", properties={'jobs': 16}, max_builds=1),
+        # Debian 7.7 x86_64 16-core GCE instance
+        create_slave("sanitizer-buildbot2", properties={'jobs': 16}, max_builds=1),
+        # Debian 7.7 x86_64 8-core GCE instance
+        create_slave("sanitizer-buildbot3", properties={'jobs': 8}, max_builds=1),
+        # Debian 7.7 x86_64 8-core GCE instance
+        create_slave("sanitizer-buildbot4", properties={'jobs': 8}, max_builds=1),
+        # Debian 7.7 x86_64 8-core GCE instance
+        create_slave("sanitizer-buildbot5", properties={'jobs': 8}, max_builds=1),
+
+        # Debian 7.7 x86_64 GCE instance
+        create_slave("modules-slave-1", properties={'jobs': 1}, max_builds=1),
 
         # zEnterprise 196 (s390x), SLES 11 SP2
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
 
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-1650 0 @ 3.20GHz
-        create_slave("ericwf-buildslave", properties={'jobs': 4}, max_builds=1),
+        create_slave("ericwf-buildslave", properties={'jobs': 4}, max_builds=2),
+        # Ubuntu 14.10 x86_64, Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
+        create_slave('ericwf-buildslave2', properties={'jobs': 4}, max_builds=2),
+        # OS X 10.10 x86_64, Intel Core 2 Duo @ 2.40GHz
+        create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_builds=1),
 
+        # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 4GB RAM
+        create_slave("zturner-win2008", properties={'jobs': 4}, max_builds=1),
+        # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 8GB RAM
+        create_slave("sanitizer-windows", properties={'jobs': 4}, max_builds=1),
+        # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 8GB RAM
+        create_slave("windows-gcebot1", properties={'jobs': 8}, max_builds=1),
+
+        # Ubuntu x86-64, 51GiB System memory Intel(R) Xeon(R) CPU @ 2.60GHz
+        create_slave("lldb-build1-ubuntu-1404", properties={'jobs': 16, 'loadaverage':
+32},
+            max_builds=1),
+        # Darwin 13.4.0, x86_64
+        create_slave("lldb-x86_64-darwin-13.4", properties={'jobs': 16, 'loadaverage':32}, max_builds=1),
         # Defunct.
+        # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
+        #create_slave("botether", properties={'jobs': 2}, max_builds=1),
+
+        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
+        #create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
+
+        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
+        #create_slave("arxan_raphael", properties={'jobs': 4}, max_builds=1),
+
+        # 2005 PowerPC Mac Mini, Mac OS X 10.5
+        #create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
+
+        # Intel(R) Core i7 920 @ 2.8GHz, 6 GB RAM, Windows 7 x64, Mingw64
+        #create_slave("sschiffli1", properties={'jobs': 4}, max_builds=1),
+
+        # Debian Testing x86-64, Intel Core i5-3570K (ivybridge) CPU @ 3.40GHz
+        #create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
 
 #        # GCC Compile Farm Slaves, see http://gcc.gnu.org/wiki/CompileFarm
 
@@ -294,4 +324,14 @@ def get_build_slaves():
         #create_slave("freebsd1", properties={'jobs' : 1}, max_builds=1),
         # Debian, P4 2.8GHz, 1GB mem
         #create_slave("balint1", properties={'jobs' : 1}, max_builds=1),
+
+        # create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),
+        # create_slave("lab-mini-02", properties={'jobs': 2}, max_builds=1),
+        # create_slave("lab-mini-03", properties={'jobs': 2}, max_builds=1),
+        # create_slave("lab-mini-04", properties={'jobs': 2}, max_builds=1),
+        # create_slave("xserve1", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve2", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve3", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve4", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve5", properties={'jobs': 4}, max_builds=1),
         ]

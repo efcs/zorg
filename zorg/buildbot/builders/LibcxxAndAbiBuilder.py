@@ -11,6 +11,8 @@ import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.util.phasedbuilderutils as phased_builder_utils
 
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+
 reload(lit_test_command)
 reload(artifacts)
 reload(phased_builder_utils)
@@ -42,7 +44,8 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 
-def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extra_opts={}):
+def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
+                           cmake_extra_opts={}, lit_extra_opts={}):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -71,12 +74,18 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extr
         env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
                            ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
 
-    litTestArgs = '-sv --show-unsupported --show-xfail'
+    # Specify the max number of threads using properties so LIT doesn't use
+    # all the threads on the system.
+    litTestArgs = '-sv --show-unsupported --show-xfail --threads=%(jobs)s'
+
     if additional_features:
         litTestArgs += (' --param=additional_features=' +
                        ','.join(additional_features))
 
-    cmake_opts = ['-DLLVM_LIT_ARGS='+litTestArgs]
+    for key in lit_extra_opts:
+        litTestArgs += (' --param=' + key + '=' + lit_extra_opts[key])
+
+    cmake_opts = [properties.WithProperties('-DLLVM_LIT_ARGS='+litTestArgs)]
     for key in cmake_extra_opts:
         cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
 
@@ -104,13 +113,19 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extr
               haltOnFailure=True, workdir=build_path))
 
     # Test libc++abi
-    f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxxabi', command=['make', 'check-libcxxabi'],
-        workdir=build_path))
+    f.addStep(LitTestCommand(
+        name            = 'test.libcxxabi',
+        command         = ['make', 'check-libcxxabi'],
+        description     = ['testing', 'libcxxabi'],
+        descriptionDone = ['test', 'libcxxabi'],
+        workdir         = build_path))
 
     # Test libc++
-    f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxx', command=['make', 'check-libcxx'],
-        workdir=build_path))
+    f.addStep(LitTestCommand(
+        name            = 'test.libcxx',
+        command         = ['make', 'check-libcxx'],
+        description     = ['testing', 'libcxx'],
+        descriptionDone = ['test', 'libcxx'],
+        workdir         = build_path))
 
     return f
