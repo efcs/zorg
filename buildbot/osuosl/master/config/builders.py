@@ -69,6 +69,7 @@ def get_builders():
          'builddir' : 'abi-checker',
          'factory': LibcxxABIChecker.getLibcxxABIChecker(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'}),
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'CMAKE_BUILD_TYPE': 'RELWITHDEBINFO'}),
         'category': 'libcxx'}
     ]
