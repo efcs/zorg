@@ -43,7 +43,7 @@ def get_status_targets(standard_builders):
 
     return [
         buildbot.status.html.WebStatus(
-            http_port = 8011, authz=authz_cfg),
+            http_port = 8080, authz=authz_cfg),
         buildbot.status.mail.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             extraRecipients = [default_email],
