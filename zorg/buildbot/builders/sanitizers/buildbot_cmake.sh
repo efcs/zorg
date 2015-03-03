@@ -38,6 +38,10 @@ if [ "$PLATFORM" == "Darwin" ]; then
   ENABLE_LIBCXX_FLAG="-DLLVM_ENABLE_LIBCXX=ON"
 fi
 
+if [ -e /usr/include/plugin-api.h ]; then
+  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
+fi
+
 BUILD_ANDROID=${BUILD_ANDROID:-0}
 RUN_ANDROID=${RUN_ANDROID:-0}
 if [ $BUILD_ANDROID == 1 -o $RUN_ANDROID == 1 ] ; then
@@ -59,7 +63,7 @@ echo @@@BUILD_STEP build fresh clang@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
-(cd clang_build && cmake -DCMAKE_BUILD_TYPE=Release \
+(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     ${CMAKE_COMMON_OPTIONS} $LLVM_CHECKOUT)
 (cd clang_build && make clang -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
 
@@ -75,17 +79,20 @@ if [ "$PLATFORM" == "Linux" ]; then
   echo @@@BUILD_STEP run sanitizer tests in gcc build@@@
   (cd clang_build && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
   (cd clang_build && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
-  (cd clang_build && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
-  (cd clang_build && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
-  (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
-  (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_WARNINGS@@@
-  (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
+  if [ "$ARCH" == "x86_64" ]; then
+    (cd clang_build && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
+    (cd clang_build && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
+    (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
+    (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_WARNINGS@@@
+    (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
+    (cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  fi
 fi
 
 ### From now on we use just-built Clang as a host compiler ###
 CLANG_PATH=${ROOT}/clang_build/bin
 # Build self-hosted tree with fresh Clang and -Werror.
-CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++"
+CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++ -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
 BUILD_TYPE=Release
 
 echo @@@BUILD_STEP bootstrap clang@@@
@@ -112,6 +119,11 @@ COMPILER_RT_BUILD_PATH=projects/compiler-rt/src/compiler-rt-build
 echo @@@BUILD_STEP run asan tests@@@
 (cd llvm_build64 && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
 
+if [ "$PLATFORM" == "Linux" ]; then
+  echo @@@BUILD_STEP run asan-dynamic tests@@@
+  (cd llvm_build64 && make -j$MAKE_JOBS check-asan-dynamic) || echo @@@STEP_FAILURE@@@
+fi
+
 if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
   echo @@@BUILD_STEP run msan unit tests@@@
   (cd llvm_build64 && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
@@ -125,6 +137,11 @@ fi
 if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
   echo @@@BUILD_STEP run 64-bit lsan unit tests@@@
   (cd llvm_build64 && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
+fi
+
+if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
+  echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
+  (cd llvm_build64 && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 echo @@@BUILD_STEP run sanitizer_common tests@@@
@@ -163,13 +180,16 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_WARNINGS@@@
   (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
+  (cd llvm_build_ninja && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
     echo @@@BUILD_STEP build Android runtime and tests@@@
 
-    build_compiler_rt arm arm-linux-androideabi
-    build_llvm_symbolizer arm arm-linux-androideabi
+    # Testing armv7 instead of plain arm to work around
+    # https://code.google.com/p/android/issues/detail?id=68779
+    build_compiler_rt arm armv7-linux-androideabi
+    build_llvm_symbolizer arm armv7-linux-androideabi
     
     build_compiler_rt x86 i686-linux-android
     build_llvm_symbolizer x86 i686-linux-android

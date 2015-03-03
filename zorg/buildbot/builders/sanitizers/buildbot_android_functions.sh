@@ -53,7 +53,7 @@ function build_compiler_rt { # ARCH triple
         -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
         -DANDROID=1 \
         -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS" \
-        -DCOMPILER_RT_TEST_TARGET_TRIPLE=arm-linux-androideabi \
+        -DCOMPILER_RT_TEST_TARGET_TRIPLE=$_triple \
         -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
         -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
         ${CMAKE_COMMON_OPTIONS} \
@@ -79,8 +79,12 @@ function test_android { # ARCH AVD STEP_FAILURE
     echo @@@BUILD_STEP device setup [$_avd]@@@
 
     $ADB devices # should be empty
-    $ANDROID_SDK/tools/emulator -avd $_avd -no-window -noaudio -no-boot-anim &
-    sleep 10
+    $ANDROID_SDK/tools/emulator -avd $_avd -no-window -noaudio -no-boot-anim -accel off &
+    # 30s is generally enough for the emulator to initialize.
+    # wait-for-device does not wait long enough, as it seems.
+    # Otherwise, /system sometimes mysteriously reverts to read-only right in
+    # the middle of asan_device_setup.
+    sleep 30
     $ADB wait-for-device
 
     echo "Device is up"

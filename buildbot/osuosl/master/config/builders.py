@@ -38,6 +38,10 @@ from zorg.buildbot.builders import SanitizerBuilderII
 reload(SanitizerBuilderII)
 from zorg.buildbot.builders import SanitizerBuilderII
 
+from zorg.buildbot.builders import SanitizerBuilderWindows
+reload(SanitizerBuilderWindows)
+from zorg.buildbot.builders import SanitizerBuilderWindows
+
 from zorg.buildbot.builders import Libiomp5Builder
 reload(Libiomp5Builder)
 from zorg.buildbot.builders import Libiomp5Builder
@@ -50,6 +54,9 @@ from zorg.buildbot.builders import SphinxDocsBuilder
 reload(SphinxDocsBuilder)
 from zorg.buildbot.builders import SphinxDocsBuilder
 
+from zorg.buildbot.builders import ABITestsuitBuilder
+reload(ABITestsuitBuilder)
+from zorg.buildbot.builders import ABITestsuitBuilder
 
 def get_builders():
     return [
@@ -106,4 +113,3 @@ def get_builders():
             lit_extra_opts={'std':'c++14'}),
         'category': 'libcxx'},
     ]
-
