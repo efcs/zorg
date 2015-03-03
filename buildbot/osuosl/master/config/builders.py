@@ -50,6 +50,10 @@ from zorg.buildbot.builders import LibcxxAndAbiBuilder
 reload(LibcxxAndAbiBuilder)
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 
+from zorg.buildbot.builders import LibcxxABIChecker
+reload(LibcxxABIChecker)
+from zorg.buildbot.builders import LibcxxABIChecker
+
 from zorg.buildbot.builders import SphinxDocsBuilder
 reload(SphinxDocsBuilder)
 from zorg.buildbot.builders import SphinxDocsBuilder
@@ -60,10 +64,10 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 
 def get_builders():
     return [
-        {'name': 'default-builder',
+        {'name': 'abi-checker',
          'slavenames': ['my_buildslave'],
-         'builddir' : 'default-build',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+         'builddir' : 'abi-checker',
+         'factory': LibcxxABIChecker.getLibcxxABIChecker(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'}),
         'category': 'libcxx'}
