@@ -59,6 +59,7 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
 
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
+    lib_file = properties.WithProperties('%(builddir)s/build/lib/libc++.so')
 
     f = getLibcxxWholeTree(f, src_root)
 
@@ -114,8 +115,7 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
 
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='test.libcxx.abi',
-              command=['abidiff', '/opt/libcxx-abi/lib/libc++.so',
-                       os.path.join(build_path, 'lib', 'libc++.so')],
+              command=['abidiff', '/opt/libcxx-abi/lib/libc++.so', lib_file],
               haltOnFailure=True, workdir=build_path))
 
     return f
