@@ -26,6 +26,10 @@ from zorg.buildbot.builders import LLDBuilder
 reload(LLDBuilder)
 from zorg.buildbot.builders import LLDBuilder
 
+from zorg.buildbot.builders import LLGoBuilder
+reload(LLGoBuilder)
+from zorg.buildbot.builders import LLGoBuilder
+
 from zorg.buildbot.builders import ClangAndLLDBuilder
 reload(ClangAndLLDBuilder)
 from zorg.buildbot.builders import ClangAndLLDBuilder
@@ -316,18 +320,21 @@ def _get_clang_builders():
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
 
-#        # This will ultimately be a self-host bot, even though the config does
-#        # not reflect that today.
-#        {'name': 'clang-x86-win2008-selfhost',
-#         'slavenames': ['windows-gcebot1'],
-#         'builddir': 'clang-x86-win2008-selfhost',
-#         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-#                        triple='i686-pc-windows-msvc',
-#                        clean=False,
-#                        checkout_compiler_rt=False,
-#                        testStage1=True,
-#                        stage1_config='Release',
-#                        extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+        # This will ultimately be a self-host bot, even though the config does
+        # not reflect that today.
+        {'name': 'clang-x86-win2008-selfhost',
+         'slavenames': ['windows-gcebot1'],
+         'builddir': 'clang-x86-win2008-selfhost',
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        clean=False,
+                        vs='%VS120COMNTOOLS%',
+                        vs_target_arch='x86',
+                        checkout_compiler_rt=False,
+                        testStage1=False,
+                        useTwoStage=True,
+                        stage1_config='Release',
+                        stage2_config='Release',
+                        extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
         {'name' : "clang-ppc64-elf-linux",
          'slavenames' :["chinook-clangslave1"],
@@ -759,6 +766,13 @@ def _get_lld_builders():
 
          ]
 
+
+# llgo builders.
+def _get_llgo_builders():
+    # No build slaves set up for llgo yet.
+    return []
+
+
 # Sanitizer builders.
 def _get_sanitizer_builders():
       return [
@@ -828,7 +842,7 @@ def _get_sanitizer_builders():
            'slavenames':["linaro-chrome-05"],
            'builddir':"clang-cmake-thumbv7-a15-full-sh",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        jobs=4,
+                        jobs=2,
                         clean=False,
                         useTwoStage=True,
                         testStage1=True,
@@ -1068,6 +1082,10 @@ def get_builders():
 
     for b in _get_lldb_builders():
         b['category'] = 'lldb'
+        yield b
+
+    for b in _get_llgo_builders():
+        b['category'] = 'llgo'
         yield b
 
     for b in _get_sanitizer_builders():
