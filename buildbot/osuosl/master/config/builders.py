@@ -64,12 +64,21 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 
 def get_builders():
     return [
-        {'name': 'abi-checker',
+        {'name': 'abi-checker-release',
          'slavenames': ['my_buildslave'],
-         'builddir' : 'abi-checker',
+         'builddir' : 'abi-checker-release',
          'factory': LibcxxABIChecker.getLibcxxABIChecker(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'CMAKE_BUILD_TYPE': 'RELWITHDEBINFO'}),
+        'category': 'libcxx'},
+
+        {'name': 'abi-checker-debug',
+         'slavenames': ['my_buildslave'],
+         'builddir' : 'abi-checker-debug',
+         'factory': LibcxxABIChecker.getLibcxxABIChecker(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
         'category': 'libcxx'}
     ]

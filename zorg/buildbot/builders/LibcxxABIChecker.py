@@ -118,4 +118,14 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
               command=['abidiff', '/opt/libcxx-abi/lib/libc++.so', lib_file],
               haltOnFailure=True, workdir=build_path))
 
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='test.libcxx.abi.release',
+              command=['abidiff', '/opt/libcxx-relwithdebinfo/lib/libc++.so', lib_file],
+              haltOnFailure=True, workdir=build_path))
+
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='test.libcxx.abi.debug',
+              command=['abidiff', '/opt/libcxx-debug/lib/libc++.so', lib_file],
+              haltOnFailure=True, workdir=build_path))
+
     return f
