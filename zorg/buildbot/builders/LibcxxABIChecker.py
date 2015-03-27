@@ -131,12 +131,12 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
 
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='test.libcxx.symbols.release',
-              command=['python', sym_diff, '/opt/libcxx-relwithdebinfo/lib/libc++.so', lib_file],
+              command=['python', sym_diff, '--demangle', '/opt/libcxx-relwithdebinfo/lib/libc++.so', lib_file],
               haltOnFailure=False, workdir=build_path))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='test.libcxx.symbols.debug',
-              command=['python', sym_diff, '/opt/libcxx-debug/lib/libc++.so', lib_file],
+              command=['python', sym_diff, '--demangle', '/opt/libcxx-debug/lib/libc++.so', lib_file],
               haltOnFailure=False, workdir=build_path))
 
     return f
