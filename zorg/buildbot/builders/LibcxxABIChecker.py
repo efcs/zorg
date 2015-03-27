@@ -60,6 +60,7 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
     lib_file = properties.WithProperties('%(builddir)s/build/lib/libc++.so')
+    sym_diff = properties.WithProperties('%(builddir)s/llvm/projects/libcxx/utils/sym_check/sym_diff.py')
 
     f = getLibcxxWholeTree(f, src_root)
 
@@ -126,6 +127,16 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='test.libcxx.abi.debug',
               command=['abidiff', '/opt/libcxx-debug/lib/libc++.so', lib_file],
+              haltOnFailure=True, workdir=build_path))
+
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='test.libcxx.symbols.release',
+              command=['python', sym_diff, '/opt/libcxx-relwithdebinfo/lib/libc++.so', lib_file],
+              haltOnFailure=True, workdir=build_path))
+
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='test.libcxx.symbols.debug',
+              command=['python', sym_diff, '/opt/libcxx-debug/lib/libc++.so', lib_file],
               haltOnFailure=True, workdir=build_path))
 
     return f
