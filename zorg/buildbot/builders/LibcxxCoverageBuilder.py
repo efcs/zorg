@@ -59,7 +59,7 @@ def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_featur
 
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
-    coverage_path = properties.WithProperties('%(builddir)s/build/projects/libcxx/test/coverage/')
+    coverage_path = properties.WithProperties('%(builddir)s/build/projects/libcxx/test/coverage/test_coverage/')
 
     f = getLibcxxWholeTree(f, src_root)
 
