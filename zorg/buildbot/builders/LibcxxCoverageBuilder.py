@@ -44,7 +44,7 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 
-def getLibcxxCoverageBuilder(profile_rt, f=None, env={}, additional_features=set(),
+def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_features=set(),
                              cmake_extra_opts={}, lit_extra_opts={}):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
@@ -59,6 +59,7 @@ def getLibcxxCoverageBuilder(profile_rt, f=None, env={}, additional_features=set
 
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
+    coverage_path = properties.WithProperties('%(builddir)s/build/projects/libcxx/test/coverage')
 
     f = getLibcxxWholeTree(f, src_root)
 
@@ -125,10 +126,17 @@ def getLibcxxCoverageBuilder(profile_rt, f=None, env={}, additional_features=set
         workdir         = build_path))
 
     f.addStep(LitTestCommand(
-        name            = 'test.libcxx',
+        name            = 'generate.coverage',
         command         = ['make', 'generate-libcxx-coverage'],
         description     = ['generating', 'code', 'coverage'],
         descriptionDone = ['generate', 'code', 'coverage'],
-        workdir         = build_path))
+        workdir         = build_path,
+        haltOnFailure   = True))
+
+    f.addStep(buildbot.steps.CopyDirectory(
+        name            = 'copy.coverage',
+        src             = coverage_path,
+        dest            = dest,
+        haltOnFailure   = True))
 
     return f

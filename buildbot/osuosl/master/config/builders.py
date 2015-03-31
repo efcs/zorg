@@ -90,6 +90,7 @@ def get_builders():
          'slavenames': ['my_buildslave'],
          'builddir' : 'libcxx-coverage',
          'factory': LibcxxCoverageBuilder.getLibcxxCoverageBuilder(
+             '/shared/libcxx-coverage',
             '/usr/local/lib/clang/3.7.0/lib/linux/libclang_rt.profile-x86_64.a',
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'}),
