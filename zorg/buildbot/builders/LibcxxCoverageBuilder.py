@@ -128,6 +128,7 @@ def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_featur
     f.addStep(buildbot.steps.shell.ShellCommand(
         name            = 'generate.coverage',
         command         = ['make', jobs_flag, 'generate-libcxx-coverage'],
+        env             = env,
         workdir         = build_path,
         haltOnFailure   = True))
 
