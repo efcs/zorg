@@ -86,24 +86,14 @@ def get_builders():
             cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
         'category': 'libcxx'},
 
-        {'name': 'abi-checker-debug-nightly',
+        {'name': 'libcxx-coverage',
          'slavenames': ['my_buildslave'],
-         'builddir' : 'abi-checker-debug-nightly',
-         'factory': LibcxxABIChecker.getLibcxxABIChecker(
+         'builddir' : 'libcxx-coverage',
+         'factory': LibcxxCoverageBuilder.getLibcxxCoverageBuilder(
+             '/shared/libcxx-coverage/',
+            '/usr/local/lib/clang/3.7.0/lib/linux/libclang_rt.profile-x86_64.a',
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
+            lit_extra_opts={'std': 'c++1z', 'use_ccache': 'True'}),
         'category': 'libcxx-nightly'}
     ]
-
-
-#        {'name': 'libcxx-coverage',
-#         'slavenames': ['my_buildslave'],
-#         'builddir' : 'libcxx-coverage',
-#         'factory': LibcxxCoverageBuilder.getLibcxxCoverageBuilder(
-#             '/shared/libcxx-coverage/',
-#            '/usr/local/lib/clang/3.7.0/lib/linux/libclang_rt.profile-x86_64.a',
-#            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-#                 'CC': 'clang', 'CXX': 'clang++'},
-#            lit_extra_opts={'std': 'c++1z', 'use_ccache': 'True'}),
-#        'category': 'libcxx-nightly'}
