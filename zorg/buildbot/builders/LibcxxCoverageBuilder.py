@@ -135,7 +135,7 @@ def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_featur
 
     f.addStep(buildbot.steps.shell.ShellCommand(
         name            = 'copy.coverage',
-        command         = ['cp', '-R', coverage_path, dest]
+        command         = ['cp', '-R', coverage_path, dest],
         workdir         = build_path,
         haltOnFailure   = True))
 
