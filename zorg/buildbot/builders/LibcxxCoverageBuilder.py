@@ -138,10 +138,4 @@ def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_featur
         workdir         = build_path,
         haltOnFailure   = True))
 
-    f.addStep(buildbot.steps.shell.ShellCommand(
-        name            = 'change.perms',
-        command         = ['chown', '-R', 'eric:www-data', dest],
-        workdir         = build_path,
-        haltOnFailure   = True))
-
     return f
