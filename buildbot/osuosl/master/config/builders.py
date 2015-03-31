@@ -94,6 +94,6 @@ def get_builders():
             '/usr/local/lib/clang/3.7.0/lib/linux/libclang_rt.profile-x86_64.a',
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'use_ccache': 'True'}),
+            lit_extra_opts={'std': 'c++1z', 'use_ccache': 'True'}),
         'category': 'libcxx'}
     ]
