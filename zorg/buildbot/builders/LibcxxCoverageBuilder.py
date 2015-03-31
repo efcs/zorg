@@ -44,8 +44,8 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 
-def getLibcxxCoverageBuild(profile_rt, f=None, env={}, additional_features=set(),
-                           cmake_extra_opts={}, lit_extra_opts={}):
+def getLibcxxCoverageBuilder(profile_rt, f=None, env={}, additional_features=set(),
+                             cmake_extra_opts={}, lit_extra_opts={}):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 

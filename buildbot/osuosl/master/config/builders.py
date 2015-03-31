@@ -54,6 +54,10 @@ from zorg.buildbot.builders import LibcxxABIChecker
 reload(LibcxxABIChecker)
 from zorg.buildbot.builders import LibcxxABIChecker
 
+from zorg.buildbot.builders import LibcxxCoverageBuilder
+reload(LibcxxCoverageBuilder)
+from zorg.buildbot.builders import LibcxxCoverageBuilder
+
 from zorg.buildbot.builders import SphinxDocsBuilder
 reload(SphinxDocsBuilder)
 from zorg.buildbot.builders import SphinxDocsBuilder
@@ -80,5 +84,14 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
+        'category': 'libcxx'}
+
+        {'name': 'libcxx-coverage',
+         'slavenames': ['my_buildslave'],
+         'builddir' : 'libcxx-coverage',
+         'factory': LibcxxCoverageBuilder.getLibcxxCoverageBuilder(
+            '/usr/local/lib/clang/3.7.0/lib/linux/libclang_rt.profile-x86_64.a',
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'}),
         'category': 'libcxx'}
     ]
