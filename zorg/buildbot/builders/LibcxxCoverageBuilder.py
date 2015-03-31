@@ -3,7 +3,6 @@ import os
 import buildbot
 import buildbot.process.factory
 import buildbot.steps.shell
-from buildbot.plugins import steps
 import buildbot.process.properties as properties
 
 from buildbot.steps.source.svn import SVN
@@ -60,7 +59,7 @@ def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_featur
 
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
-    coverage_path = properties.WithProperties('%(builddir)s/build/projects/libcxx/test/coverage')
+    coverage_path = properties.WithProperties('%(builddir)s/build/projects/libcxx/test/coverage/')
 
     f = getLibcxxWholeTree(f, src_root)
 
@@ -134,10 +133,10 @@ def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_featur
         workdir         = build_path,
         haltOnFailure   = True))
 
-    f.addStep(steps.CopyDirectory(
+    f.addStep(buildbot.steps.shell.ShellCommand(
         name            = 'copy.coverage',
-        src             = coverage_path,
-        dest            = dest,
+        command         = ['cp', '-R', coverage_path, dest]
+        workdir         = build_path,
         haltOnFailure   = True))
 
     return f
