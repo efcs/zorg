@@ -84,7 +84,7 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
-        'category': 'libcxx'}
+        'category': 'libcxx'},
 
         {'name': 'libcxx-coverage',
          'slavenames': ['my_buildslave'],
