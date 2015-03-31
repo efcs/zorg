@@ -3,6 +3,7 @@ import os
 import buildbot
 import buildbot.process.factory
 import buildbot.steps.shell
+import buildbot.plugins.steps
 import buildbot.process.properties as properties
 
 from buildbot.steps.source.svn import SVN
@@ -133,7 +134,7 @@ def getLibcxxCoverageBuilder(dest, profile_rt, f=None, env={}, additional_featur
         workdir         = build_path,
         haltOnFailure   = True))
 
-    f.addStep(buildbot.steps.CopyDirectory(
+    f.addStep(buildbot.plugin.steps.CopyDirectory(
         name            = 'copy.coverage',
         src             = coverage_path,
         dest            = dest,
