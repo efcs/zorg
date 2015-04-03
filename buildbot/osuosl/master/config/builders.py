@@ -75,7 +75,8 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'CMAKE_BUILD_TYPE': 'RELWITHDEBINFO'}),
-        'category': 'libcxx'},
+        'category': 'libcxx',
+        'builder_type': 'commit'},
 
         {'name': 'abi-checker-debug',
          'slavenames': ['my_buildslave'],
@@ -84,7 +85,8 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
-        'category': 'libcxx'},
+        'category': 'libcxx',
+        'builder_type': 'commit'},
 
         {'name': 'libcxx-coverage',
          'slavenames': ['my_buildslave'],
@@ -95,5 +97,6 @@ def get_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             lit_extra_opts={'std': 'c++1z', 'use_ccache': 'True'}),
-        'category': 'libcxx-nightly'}
+        'category': 'libcxx',
+        'builder_type': 'nightly'}
     ]
