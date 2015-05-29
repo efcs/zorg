@@ -44,8 +44,4 @@ def get_status_targets(standard_builders):
     return [
         buildbot.status.html.WebStatus(
             http_port = 8080, authz=authz_cfg),
-        buildbot.status.words.IRC(
-            host = "irc.oftc.net", nick = "ericwf-buildbot", channels = ["#llvm"],
-            allowForce = True,
-            notify_events = ['successToFailure', 'failureToSuccess']),
         ]
