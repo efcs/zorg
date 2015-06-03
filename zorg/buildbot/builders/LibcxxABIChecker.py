@@ -54,8 +54,7 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
         name="get_builddir",
         command=["pwd"],
         property="builddir",
-        description="set build dir",
-        workdir="."))
+        description="set build dir"))
 
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
