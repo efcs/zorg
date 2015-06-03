@@ -117,7 +117,7 @@ def getLibcxxABIChecker(f=None, env={}, additional_features=set(),
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='test.libcxx.abi',
               command=['abidiff', '/opt/libcxx-abi/lib/libc++.so', lib_file],
-              haltOnFailure=True, workdir=build_path))
+              haltOnFailure=False, workdir=build_path))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='test.libcxx.abi.release',
