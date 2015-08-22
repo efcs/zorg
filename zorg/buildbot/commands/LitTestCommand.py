@@ -48,29 +48,34 @@ class LitLogObserver(LogLineObserver):
     self.activeVerboseLog.append(line)
 
     # If this is a stop marker, process the test info.
-    if self.kTestVerboseLogStopRE.match(line):
+    if self.kTestVerboseLogStopRE.match(line.strip()):
       self.testInfoFinished()
 
   def testInfoFinished(self):
     # We have finished getting information for one test, handle it.
-    code, name = self.lastTestResult
+    if self.lastTestResult:
+        code, name = self.lastTestResult
 
-    # If the test failed, add a log entry for it (unless we have reached the
-    # max).
-    if code in self.failingCodes and (self.maxLogs is None or
-                                      self.numLogs < self.maxLogs):
-      # If a verbose log was not provided, just add a one line description.
-      if self.activeVerboseLog is None:
-        self.activeVerboseLog = ['%s: %s' % (code, name)]
+        # If the test failed, add a log entry for it (unless we have reached the
+        # max).
+        if code in self.failingCodes and (self.maxLogs is None or
+                                          self.numLogs < self.maxLogs):
+          # If a verbose log was not provided, just add a one line description.
+          if self.activeVerboseLog is None:
+            self.activeVerboseLog = ['%s: %s' % (code, name)]
 
-      # Add the log to the build status.
-      # Make the test name short, the qualified test name is in the log anyway.
-      # Otherwise, we run out of the allowed name length on some hosts.
-      name_part = name.rpartition('::')
-      self.step.addCompleteLog(
-                  code + ': ' + name_part[0].strip() + name_part[1] + basename(name_part[2]),
-                  '\n'.join(self.activeVerboseLog))
-      self.numLogs += 1
+          # Add the log to the build status.
+          # Make the test name short, the qualified test name is in the log anyway.
+          # Otherwise, we run out of the allowed name length on some hosts.
+          name_part = name.rpartition('::')
+          self.step.addCompleteLog(
+                      code + ': ' + name_part[0].strip() + name_part[1] + basename(name_part[2]),
+                      '\n'.join(self.activeVerboseLog))
+          self.numLogs += 1
+    else:
+        if self.activeVerboseLog:
+            self.activeVerboseLog.append(
+              "error: missing test status line, skipping log")
 
     # Reset the current state.
     self.lastTestResult = None
@@ -101,7 +106,11 @@ class LitLogObserver(LogLineObserver):
     m = self.kTestVerboseLogStartRE.match(line.strip())
     if m:
       self.activeVerboseLog = [line]
-      if m.group(1) != self.lastTestResult[1]:
+      if self.lastTestResult is None:
+        if self.activeVerboseLog:
+            self.activeVerboseLog.append(
+              "error: missing test line before verbose log start.")
+      elif m.group(1) != self.lastTestResult[1]:
         # This is bogus, the verbose log test name doesn't match what we
         # expect. Just note it in the log but otherwise accumulate as normal.
         self.activeVerboseLog.append(
@@ -142,7 +151,8 @@ class LitTestCommand(Test):
                  'UNTESTED':'untested testcases',
                  'REGRESSED':'runtime performance regression',
                  'IMPROVED':'runtime performance improvement',
-                 'UNSUPPORTED':'unsupported tests'}
+                 'UNSUPPORTED':'unsupported tests',
+                 'TIMEOUT':'timeout waiting for results'}
 
   def __init__(self, ignore=[], flaky=[], max_logs=20, parseSummaryOnly=False,
                *args, **kwargs):
@@ -198,13 +208,28 @@ class TestLogObserver(unittest.TestCase):
 
   def test_basic(self):
     obs = self.parse_log("""
-PASS: test-one (1 of 3)
-FAIL: test-two (2 of 3)
-PASS: test-three (3 of 3)
+PASS: test-one (1 of 4)
+FAIL: test-two (2 of 4)
+PASS: test-three (3 of 4)
+TIMEOUT: test-four (4 of 4)
 """)
 
-    self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'PASS' : 2 })
-    self.assertEqual(obs.step.logs, [('FAIL: test-two', 'FAIL: test-two')])
+    self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'TIMEOUT' : 1, 'PASS' : 2 })
+    self.assertEqual(obs.step.logs, [('FAIL: test-two', 'FAIL: test-two'), ('TIMEOUT: test-four', 'TIMEOUT: test-four')])
+
+  def test_missing_lastresult(self):
+    obs = self.parse_log("""
+FAIL: LLDB :: 10-breakpoint-by-address-multiple-hit-first-add-next
+********** TEST 'LLDB :: 10-breakpoint-by-address-multiple-hit-first-add-next' FAIL **********
+bla bla bla
+**********
+         TIMEOUT: LLDB :: 57-dlopen-breakpoint (51 of 57)
+         ********** TEST 'LLDB :: 57-dlopen-breakpoint' TIMEOUT **********
+         bla
+         **********
+""")
+
+    self.assertEqual(obs.resultCounts, {'TIMEOUT': 1})
 
   def test_verbose_logs(self):
     obs = self.parse_log("""
@@ -225,6 +250,25 @@ bla bla bla
 **********"""),
         ('FAIL: test-three', 'FAIL: test-three')])
 
+  def test_indented_log(self):
+    obs = self.parse_log("""
+    FAIL: test-one (1 of 3)
+    FAIL: test-two (2 of 3)
+    **** TEST 'test-two' FAILED ****
+    bla bla bla
+    **********
+    FAIL: test-three (3 of 3)
+""")
+
+    self.assertEqual(obs.resultCounts, { 'FAIL' : 3 })
+    self.assertEqual(obs.step.logs, [
+        ('FAIL: test-one', 'FAIL: test-one'),
+        ('FAIL: test-two', """\
+    **** TEST 'test-two' FAILED ****
+    bla bla bla
+    **********"""),
+        ('FAIL: test-three', 'FAIL: test-three')])
+
 class TestCommand(unittest.TestCase):
   def parse_log(self, text, **kwargs):
     cmd = LitTestCommand(**kwargs)
@@ -240,7 +284,7 @@ class TestCommand(unittest.TestCase):
 
     # If there were failing tests, the status should be an error (even if the
     # test command didn't report as such).
-    for failing_code in ('FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'):
+    for failing_code in set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED', 'TIMEOUT']):
       cmd = self.parse_log("""%s: test-one (1 of 1)""" % (failing_code,))
       self.assertEqual(cmd.evaluateCommand(RemoteCommandProxy(0)), FAILURE)
 

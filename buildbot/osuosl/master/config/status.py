@@ -12,7 +12,7 @@ from zorg.buildbot.util.InformativeMailNotifier import InformativeMailNotifier
 # pushed to these targets. buildbot/status/*.py has a variety to choose from,
 # including web pages, email senders, and IRC bots.
 
-def get_status_targets(standard_builders):
+def get_status_targets(standard_builders, standard_categories=None):
 
     from buildbot.status import html
     from buildbot.status.web import auth, authz
@@ -30,20 +30,11 @@ def get_status_targets(standard_builders):
 
     default_email = config.options.get('Master Options', 'default_email')
 
-    # The LNT performance buildbots have a very long delay and commonly fail
-    # late and if they fail, all of them fail together. As the same failures
-    # are are normally also catched by the faster non-LNT bots, there is no need
-    # to warn everybody about failures in the performance bots. Tobias Grosser
-    # will keep track of such.
-    standard_builders = [b for b in standard_builders if not b.startswith('perf-x86_64')]
-
-    # The sphinx buildbots are currently experimental so we don't
-    # want to notify everyone about build failures
-    standard_builders = [b for b in standard_builders if not b.endswith('-sphinx-docs')]
-
     return [
         buildbot.status.html.WebStatus(
             http_port = 8011, authz=authz_cfg),
+
+        # All the standard builders send e-mail and IRC notifications.
         buildbot.status.mail.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             extraRecipients = [default_email],
@@ -55,7 +46,11 @@ def get_status_targets(standard_builders):
         buildbot.status.words.IRC(
             host = "irc.oftc.net", nick = "llvmbb", channels = ["#llvm"],
             allowForce = True,
+            categories = standard_categories,
             notify_events = ['successToFailure', 'failureToSuccess']),
+
+        # In addition to that the following notifiers are defined for special
+        # cases.
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
@@ -96,13 +91,14 @@ def get_status_targets(standard_builders):
             extraRecipients = ["mstester.llvm@gmail.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-atom-d525-fedora", "clang-atom-d525-fedora-rel"],
+            builders = ["clang-atom-d525-fedora", "clang-atom-d525-fedora-rel",
+                        "clang-x64-ninja-win7"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["rfoos@codeaurora.org","llvm.buildmaster@quicinc.com"],
+            extraRecipients = ["llvm.buildmaster@quicinc.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["llvm-hexagon-elf","clang-hexagon-elf"],
@@ -120,13 +116,35 @@ def get_status_targets(standard_builders):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["dan@su-root.co.uk", "chisophugis@gmail.com"],
+            extraRecipients = ["axwalk@gmail.com","peter@pcc.me.uk"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["llvm-sphinx-docs",
-                        "clang-sphinx-docs",
-                        "lld-sphinx-docs"
-                       ],
+            builders = ["llgo-x86_64-linux"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["lldb-build-police-gmt@grotations.appspotmail.com",
+                               "lldb-build-police-pst@grotations.appspotmail.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["lldb-x86_64-ubuntu-14.04-cmake",
+                        "lldb-x86_64-ubuntu-14.04-buildserver",
+                        "lldb-windows7-android",
+                        "lldb-x86_64-darwin-13.4",
+                        "lldb-x86_64-ubuntu-14.04-android"],
+            addLogs=False,
+            num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["sunil_srivastava@playstation.sony.com",
+                               "warren_ristow@playstation.sony.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["clang-x86_64-linux-abi-test"],
+            addLogs=False,
+            num_lines = 15),
+
         ]

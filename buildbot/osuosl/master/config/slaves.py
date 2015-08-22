@@ -18,19 +18,19 @@ def get_build_slaves():
         # Windows 7 Professional x64
         create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
 
-        # FreeBSD 9.2-RELEASE
+        # FreeBSD 11.0-CURRENT
         create_slave("as-bldslv5", properties={'jobs' : 24}, max_builds=2),
 
         # Windows 7 Ultimate
         create_slave("as-bldslv7", properties={'jobs' : 1}, max_builds=1),
 
-        # FreeBSD 8.2 X86_64
-        create_slave("as-bldslv8", properties={'jobs' : 2}, max_builds=1),
+        # Linux Ubuntu 14.04 LTS
+        create_slave("as-bldslv8"),
 
         # Mac Pro 2.7 GHz 12-Core Intel Xeon E5, Maverick 10.9.2
         create_slave("as-bldslv9", properties={'jobs' : 8}, max_builds=4),
 
-        # Cortex-A15 slaves
+        # ARMv7 Linaro slaves
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-03", properties={'jobs' : 2}, max_builds=1),
@@ -42,7 +42,11 @@ def get_build_slaves():
         create_slave("linaro-a15-03", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-04", properties={'jobs' : 4}, max_builds=1),
 
-        create_slave("linaro-dragon-01", properties={'jobs' : 4}, max_builds=1),
+        # AArch64 Linaro slaves
+        create_slave("linaro-apm-01", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-02", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-03", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
@@ -158,7 +162,7 @@ def get_build_slaves():
         create_slave("sanitizer-buildbot5", properties={'jobs': 8}, max_builds=1),
 
         # Debian 7.7 x86_64 GCE instance
-        create_slave("modules-slave-1", properties={'jobs': 1}, max_builds=1),
+        create_slave("modules-slave-1", properties={'jobs': 16}, max_builds=1),
 
         # zEnterprise 196 (s390x), SLES 11 SP2
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
@@ -178,11 +182,21 @@ def get_build_slaves():
         create_slave("windows-gcebot1", properties={'jobs': 8}, max_builds=1),
 
         # Ubuntu x86-64, 51GiB System memory Intel(R) Xeon(R) CPU @ 2.60GHz
-        create_slave("lldb-build1-ubuntu-1404", properties={'jobs': 16, 'loadaverage':
-32},
-            max_builds=1),
+        create_slave("lldb-build1-ubuntu-1404", properties={'jobs': 32, 'loadaverage':32}, max_builds=1),
         # Darwin 13.4.0, x86_64
         create_slave("lldb-x86_64-darwin-13.4", properties={'jobs': 16, 'loadaverage':32}, max_builds=1),
+        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU @ 2.30GHz
+        create_slave("llgo-builder", properties={'jobs': 2}, max_builds=1),
+        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-2680 v2 @ 2.80GHz
+        create_slave("lldb-lab-linux01", properties={'jobs': 40}, max_builds=1),
+
+        # Windows 7 x86_64
+        create_slave("lldb-lab-win01", properties={'jobs': 40}, max_builds=1),
+        # Ubuntu 14.04 x86_64
+        create_slave("lldb-linux-android-buildserver", properties={'jobs': 40}, max_builds=1),
+        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
+        create_slave("bpf-build-slave01", properties={'jobs': 16}, max_builds=1),
+
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),
