@@ -4,6 +4,9 @@ set -x
 set -e
 set -u
 
+# Set HOME for gsutil to work
+export HOME=/var/lib/buildbot
+
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
@@ -19,10 +22,21 @@ LLVM=$ROOT/llvm
 # No assertions. Need to clean up the existing assertion failures first.
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=3"
-CORPUS_ROOT=$ROOT/fuzzing-with-sanitizers/llvm
+CORPUS_ROOT=$ROOT/CORPORA/llvm
 CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
 CLANG_CORPUS=$CORPUS_ROOT/clang/C1
 LLVM_AS_CORPUS=$CORPUS_ROOT/llvm-as/C1
+
+GS_ROOT=gs://fuzzing-with-sanitizers/llvm
+
+syncFromGs() {
+  mkdir -p $CORPUS_ROOT/$1
+  gsutil -m rsync $GS_ROOT/$1 $CORPUS_ROOT/$1
+}
+
+syncToGs() {
+  gsutil -m rsync $CORPUS_ROOT/$1 $GS_ROOT/$1
+}
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -35,12 +49,6 @@ fi
 # Clobber the build trees.
 rm -rf ${STAGE2_ASAN_DIR}
 rm -rf ${STAGE2_ASAN_ASSERTIONS_DIR}
-
-# Create an empty directory for the corpus if it doesn't exist yet.
-# It will get populated with examples.
-# FIXME: synchronize this directory with some external persistent storage.
-mkdir -p $CLANG_FORMAT_CORPUS
-mkdir -p $CLANG_CORPUS
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
 # for assertion failures.
@@ -56,13 +64,9 @@ echo @@@BUILD_STEP build clang@@@
 build_stage1_clang
 
 echo @@@BUILD_STEP pull test corpuses @@@
-(cd $CORPUS_ROOT && git pull --no-edit)
-
-# Stage 2 / AddressSanitizer
-
-#echo @@@BUILD_STEP stage2/asan check-fuzzer@@@
-
-#mkdir -p ${STAGE2_ASAN_DIR}
+syncFromGs clang/C1
+syncFromGs clang-format/C1
+syncFromGs llvm-as/C1
 
 # TODO(smatveev): merge this with build_stage2()
 clang_path=$ROOT/${STAGE1_DIR}/bin
@@ -76,28 +80,7 @@ cmake_stage2_asan_options=" \
 common_stage2_variables
 export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
 
-#(cd ${STAGE2_ASAN_DIR} && cmake ${cmake_stage2_asan_options} $LLVM) || \
-#  echo @@@STEP_FAILURE@@@
-
-#(cd ${STAGE2_ASAN_DIR} && ninja check-fuzzer) || echo @@@STEP_FAILURE@@@
-
-#echo @@@BUILD_STEP stage2/asan build clang-format-fuzzer and clang-fuzzer@@@
-
-#(cd ${STAGE2_ASAN_DIR} && ninja clang-format-fuzzer clang-fuzzer) || echo @@@STEP_FAILURE@@@
-
-#echo @@@BUILD_STEP stage2/asan run clang-format-fuzzer@@@
-
-#(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=32 -workers=8 -runs=131072 $CLANG_FORMAT_CORPUS) || \
-#  echo @@@STEP_WARNINGS@@@
-
-#echo @@@BUILD_STEP stage2/asan run clang-fuzzer@@@
-# leak detection is disabled until assertions from
-# https://llvm.org/bugs/show_bug.cgi?id=23057#c4 are fixed.
-# See also https://llvm.org/bugs/show_bug.cgi?id=23057#c12
-#(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_CORPUS) || \
-#  echo @@@STEP_WARNINGS@@@
-
-# Stage 3 / AddressSanitizer + assertions
+# Stage 2 / AddressSanitizer + assertions
 mkdir -p ${STAGE2_ASAN_ASSERTIONS_DIR}
 echo @@@BUILD_STEP stage2/asan+assertions check-fuzzer@@@
 cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_ASSERTIONS=ON"
@@ -122,9 +105,11 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 
 # No leak detection due to https://llvm.org/bugs/show_bug.cgi?id=24639#c5
 echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
-(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=10000000 -only_ascii=1 $LLVM_AS_CORPUS) || \
+(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=0 -only_ascii=1 $LLVM_AS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
-$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CORPUS_ROOT
+syncToGs clang/C1
+syncToGs clang-format/C1
+syncToGs llvm-as/C1
 

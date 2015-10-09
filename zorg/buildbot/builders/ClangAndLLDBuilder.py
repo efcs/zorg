@@ -13,8 +13,12 @@ def getClangAndLLDBuildFactory(
            clean=True,
            env=None,
            withLLD=True,
+           extraCmakeOptions=None,
            extraCompilerOptions=None,
-           buildWithSanitizerOptions=None):
+           buildWithSanitizerOptions=None,
+           triple=None,
+           prefixCommand=["nice", "-n", "10"] # For backward compatibility.
+    ):
 
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -113,6 +117,13 @@ def getClangAndLLDBuildFactory(
         cmakeCommand += [
             "-DCMAKE_C_COMPILER=clang",
             "-DCMAKE_CXX_COMPILER=clang++"]
+    if triple:
+        cmakeCommand += [
+            "-DLLVM_DEFAULT_TARGET_TRIPLE=%s" % triple]
+
+    if extraCmakeOptions:
+        cmakeCommand += extraCmakeOptions
+
     cmakeCommand += [
         "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
         "-DCMAKE_CXX_FLAGS=\"-std=c++11 %s\"" % (" ".join(options)),
@@ -131,7 +142,7 @@ def getClangAndLLDBuildFactory(
 
     # Build everything.
     f.addStep(NinjaCommand(name="build",
-                           prefixCommand=["nice", "-n", "10"],
+                           prefixCommand=prefixCommand,
                            haltOnFailure=True,
                            description=["build"],
                            workdir=llvm_objdir,
@@ -139,7 +150,7 @@ def getClangAndLLDBuildFactory(
 
     # Test everything.
     f.addStep(NinjaCommand(name="test",
-                           prefixCommand=["nice", "-n", "10"],
+                           prefixCommand=prefixCommand,
                            targets=["check-all"],
                            haltOnFailure=True,
                            description=["test"],
