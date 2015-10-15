@@ -86,7 +86,7 @@ def getLibcxxBuilder(name, cc, cxx, cmake_opts={}, lit_invocations=[]):
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
-     'factory': LibcxxCoverageBuilder.getLibcxxAndAbiBuilder(
+     'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
         env={'PATH': '/usr/local/bin:/usr/bin:/bin',
              'LIBCXX_USE_CCACHE': '1',
              'CC': cc, 'CXX': cxx},
