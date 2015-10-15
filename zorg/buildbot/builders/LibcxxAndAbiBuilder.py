@@ -21,7 +21,7 @@ class LitTestConfiguration:
     def __init__(self, name, opts={}, paths=[]):
         self.name = name
         self.opts = dict(opts)
-        self.paths = dict(paths)
+        self.paths = list(paths)
 
 def getLibcxxWholeTree(f, src_root):
     llvm_path = src_root
