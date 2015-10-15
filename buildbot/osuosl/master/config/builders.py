@@ -73,8 +73,7 @@ reload(ABITestsuitBuilder)
 from zorg.buildbot.builders import ABITestsuitBuilder
 
 default_conf = LitTestConfiguration(
-    name = 'libcxx',
-    desc = 'libcxx')
+    name = 'libcxx')
 
 dialect_args = [
     LitTestConfiguration(name='libcxx-cxx03', opts={'std': 'c++03'}),
@@ -89,6 +88,7 @@ def getLibcxxBuilder(name, cc, cxx, cmake_opts={}, lit_invocations=[]):
      'builddir' : name,
      'factory': LibcxxCoverageBuilder.getLibcxxAndAbiBuilder(
         env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+             'LIBCXX_USE_CCACHE': '1',
              'CC': cc, 'CXX': cxx},
         cmake_extra_opts=cmake_opts,
         lit_invocations=lit_invocations),
