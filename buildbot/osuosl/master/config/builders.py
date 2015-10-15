@@ -86,7 +86,7 @@ tsan_args = []
 
 def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
                      lit_invocations=default_invocations,
-                     enable_libcxxabi=False, generate_coverage=None):
+                     enable_libcxxabi=True, generate_coverage=None):
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
