@@ -288,7 +288,7 @@ def _get_clang_builders():
          'slavenames' :["ppc64be-clang-lnt-test"],
          'builddir' :"clang-ppc64-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
-                                              nt_flags=['--multisample=3','--cflag','-mcpu=native'],
+                                              nt_flags=['--cflag','-mcpu=native', '-j8'],
                                               jobs=4,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
@@ -305,7 +305,7 @@ def _get_clang_builders():
          'slavenames' :["ppc64le-clang-lnt-test"],
          'builddir' :"clang-lnt-ppc64le-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
-                                              nt_flags=['--multisample=3','--cflag','-mcpu=native'],
+                                              nt_flags=['--cflag','-mcpu=native'],
                                               jobs=4,  use_pty_in_tests=True,
                                               testerName='ppc64le-plain', run_cxx_tests=True)},
 
@@ -477,7 +477,7 @@ def _get_polly_builders():
          'slavenames':["pollyperf6"],
          'builddir': "perf-x86_64-penryn-O3-polly-unprofitable",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-detect-unprofitable', '--mllvm=-polly-no-early-exit' ],
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-process-unprofitable' ],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-unprofitable')},
@@ -786,6 +786,15 @@ def _get_libcxx_builders():
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'},
             lit_extra_opts={'std':'c++1z'}),
+        'category': 'libcxx'},
+        
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-unstable-abi',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-unstable-abi',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_ABI_UNSTABLE': 'ON'}),
         'category': 'libcxx'},
 
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
