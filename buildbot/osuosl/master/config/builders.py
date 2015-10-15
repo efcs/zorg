@@ -21,10 +21,15 @@ from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 reload(LLDBBuilder)
 from zorg.buildbot.builders import LLDBBuilder
+from zorg.buildbot.builders.LLDBBuilder import RemoteConfig
 
 from zorg.buildbot.builders import LLDBuilder
 reload(LLDBuilder)
 from zorg.buildbot.builders import LLDBuilder
+
+from zorg.buildbot.builders import LLGoBuilder
+reload(LLGoBuilder)
+from zorg.buildbot.builders import LLGoBuilder
 
 from zorg.buildbot.builders import ClangAndLLDBuilder
 reload(ClangAndLLDBuilder)
@@ -68,26 +73,6 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 
 def get_builders():
     return [
-        {'name': 'abi-checker-release',
-         'slavenames': ['my_buildslave'],
-         'builddir' : 'abi-checker-release',
-         'factory': LibcxxABIChecker.getLibcxxABIChecker(
-            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'CMAKE_BUILD_TYPE': 'RELWITHDEBINFO'}),
-        'category': 'libcxx',
-        'builder_type': 'commit'},
-
-        {'name': 'abi-checker-debug',
-         'slavenames': ['my_buildslave'],
-         'builddir' : 'abi-checker-debug',
-         'factory': LibcxxABIChecker.getLibcxxABIChecker(
-            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
-        'category': 'libcxx',
-        'builder_type': 'commit'},
-
         {'name': 'libcxx-coverage',
          'slavenames': ['my_buildslave'],
          'builddir' : 'libcxx-coverage',
@@ -100,3 +85,25 @@ def get_builders():
         'category': 'libcxx',
         'builder_type': 'nightly'}
     ]
+
+""" Old builders
+{'name': 'abi-checker-release',
+ 'slavenames': ['my_buildslave'],
+ 'builddir' : 'abi-checker-release',
+ 'factory': LibcxxABIChecker.getLibcxxABIChecker(
+    env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+         'CC': 'clang', 'CXX': 'clang++'},
+    cmake_extra_opts={'CMAKE_BUILD_TYPE': 'RELWITHDEBINFO'}),
+'category': 'libcxx',
+'builder_type': 'commit'},
+
+{'name': 'abi-checker-debug',
+ 'slavenames': ['my_buildslave'],
+ 'builddir' : 'abi-checker-debug',
+ 'factory': LibcxxABIChecker.getLibcxxABIChecker(
+    env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+         'CC': 'clang', 'CXX': 'clang++'},
+    cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
+'category': 'libcxx',
+'builder_type': 'commit'},
+"""

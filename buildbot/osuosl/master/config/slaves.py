@@ -11,4 +11,4 @@ def create_slave(name, *args, **kwargs):
 def get_build_slaves():
     return [
         create_slave("my_buildslave", properties={'jobs': 4}, max_builds=1)
-        ]
+    ]
