@@ -87,13 +87,17 @@ tsan_args = []
 def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
                      lit_invocations=default_invocations,
                      enable_libcxxabi=True, generate_coverage=None):
+    env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+         'LIBCXX_USE_CCACHE': '1',
+         'CC': cc, 'CXX': cxx}
+    # Disable CCACHE for coverage builds.
+    if generate_coverage:
+        del env['LIBCXX_USE_CCACHE']
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
      'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-        env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-             'LIBCXX_USE_CCACHE': '1',
-             'CC': cc, 'CXX': cxx},
+        env=env,
         cmake_extra_opts=cmake_opts,
         lit_invocations=lit_invocations,
         enable_libcxxabi=enable_libcxxabi,
