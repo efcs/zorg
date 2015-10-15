@@ -98,6 +98,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
 
     f = getLibcxxWholeTree(f, src_root)
 
+    cmake_opts = []
     for key in cmake_extra_opts:
         cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
 
