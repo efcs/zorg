@@ -113,13 +113,18 @@ def get_builders():
                 'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/3.8.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=min_dialect_args,
             generate_coverage='/shared/libcxx-coverage'),
+        
         getLibcxxBuilder('gcc-builder',
-            cc='gcc', cxx='g++', lit_invocations=dialect_args),
+            cc='/opt/gcc-5.2.0/bin/gcc', cxx='/opt/gcc-5.2.0/bin/g++',
+            lit_invocations=dialect_args),
+        
         getLibcxxBuilder('static-libcxxabi-builder',
             cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY': 'ON'}),
+        
         getLibcxxBuilder('abi-unstable',
             cmake_opts={'LIBCXX_ABI_UNSTABLE': 'ON'},
             lit_invocations=min_dialect_args),
+        
         getLibcxxBuilder('no-threads',
             cmake_opts={'LIBCXX_ENABLE_THREADS': 'OFF',
                         'LIBCXXABI_ENABLE_THREADS': 'OFF'},
