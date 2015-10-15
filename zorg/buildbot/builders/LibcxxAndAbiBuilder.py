@@ -32,19 +32,20 @@ def getLibcxxWholeTree(f, src_root):
     libcxxabi_path = properties.WithProperties(
         '%(builddir)s/llvm/projects/libcxxabi')
 
+    mode = 'clean'
     f = phased_builder_utils.SVNCleanupStep(f, llvm_path)
     f.addStep(SVN(name='svn-llvm',
-                  mode='full',
+                  mode=mode,
                   baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
                   workdir=llvm_path))
     f.addStep(SVN(name='svn-libcxx',
-                  mode='full',
+                  mode=mode,
                   baseURL='http://llvm.org/svn/llvm-project/libcxx/',
                   defaultBranch='trunk',
                   workdir=libcxx_path))
     f.addStep(SVN(name='svn-libcxxabi',
-                  mode='full',
+                  mode=mode,
                   baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
                   defaultBranch='trunk',
                   workdir=libcxxabi_path))
