@@ -82,7 +82,7 @@ def addTestSuite(litDesc):
     
 
 def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=[],
-    enable_libcxxabi = True):
+    enable_libcxxabi = True, generate_coverage=None):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -128,7 +128,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
               haltOnFailure=True, workdir=build_path))
 
     # Test libc++abi
-    if enable_libcxxabi:
+    if enable_libcxxabi and not generate_coverage:
         f.addStep(LitTestCommand(
             name            = 'test.libcxxabi',
             command         = ['make', 'check-libcxxabi'],
@@ -140,5 +140,19 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
     assert len(lit_invocations) >= 1
     for inv in lit_invocations:
         f.addStep(addTestSuite(inv))
+        
+    if generate_coverage:
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name            = 'generate.coverage',
+            command         = ['make', jobs_flag, 'generate-libcxx-coverage'],
+            env             = env,
+            workdir         = build_path,
+            haltOnFailure   = True))
+
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name            = 'copy.coverage',
+            command         = ['cp', '-R', coverage_path, generate_coverage],
+            workdir         = build_path,
+            haltOnFailure   = True))
 
     return f
