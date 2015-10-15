@@ -81,7 +81,8 @@ def addTestSuite(litDesc):
     
     
 
-def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=[]):
+def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=[],
+    enable_libcxxabi = True):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -116,7 +117,8 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
 
     # Build libcxxabi
     jobs_flag = properties.WithProperties('-j%(jobs)s')
-    f.addStep(buildbot.steps.shell.ShellCommand(
+    if enable_libcxxabi:
+        f.addStep(buildbot.steps.shell.ShellCommand(
               name='build.libcxxabi', command=['make', jobs_flag, 'cxxabi'],
               haltOnFailure=True, workdir=build_path))
 
@@ -126,12 +128,13 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
               haltOnFailure=True, workdir=build_path))
 
     # Test libc++abi
-    f.addStep(LitTestCommand(
-        name            = 'test.libcxxabi',
-        command         = ['make', 'check-libcxxabi'],
-        description     = ['testing', 'libcxxabi'],
-        descriptionDone = ['test', 'libcxxabi'],
-        workdir         = build_path))
+    if enable_libcxxabi:
+        f.addStep(LitTestCommand(
+            name            = 'test.libcxxabi',
+            command         = ['make', 'check-libcxxabi'],
+            description     = ['testing', 'libcxxabi'],
+            descriptionDone = ['test', 'libcxxabi'],
+            workdir         = build_path))
 
     # Test libc++
     assert len(lit_invocations) >= 1

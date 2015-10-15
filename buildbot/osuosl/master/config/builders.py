@@ -72,8 +72,7 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 reload(ABITestsuitBuilder)
 from zorg.buildbot.builders import ABITestsuitBuilder
 
-default_conf = LitTestConfiguration(
-    name = 'libcxx')
+default_invocations = [LitTestConfiguration(name = 'libcxx')]
 
 dialect_args = [
     LitTestConfiguration(name='libcxx-cxx03', opts={'std': 'c++03'}),
@@ -82,7 +81,16 @@ dialect_args = [
     LitTestConfiguration(name='libcxx-cxx1z', opts={'std': 'c++1z'})
 ]
 
-def getLibcxxBuilder(name, cc, cxx, cmake_opts={}, lit_invocations=[]):
+min_dialect_args = [
+    LitTestConfiguration(name='libcxx-cxx03', opts={'std': 'c++03'}),
+    LitTestConfiguration(name='libcxx-default')
+]
+
+tsan_args = []
+
+def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
+                     lit_invocations=default_invocations,
+                     enable_libcxxabi=False):
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
@@ -108,7 +116,20 @@ def get_builders():
             lit_extra_opts={'std': 'c++1z', 'use_ccache': 'True'}),
         'category': 'libcxx',
         'builder_type': 'nightly'},
-        getLibcxxBuilder('gcc-builder', cc='gcc', cxx='g++', lit_invocations=dialect_args)
+        getLibcxxBuilder('gcc-builder',
+            cc='gcc', cxx='g++', lit_invocations=dialect_args),
+        getLibcxxBuilder('static-libcxxabi-builder',
+            cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON'}
+            lit_invocations=default_invocations)
+        getLibcxxBuilder('abi-unstable',
+            cmake_opts={'LIBCXX_ABI_UNSTABLE': 'ON'},
+            lit_invocations=min_dialect_args),
+        getLibcxxBuilder('no-threads',
+            cmake_opts={'LIBCXX_ENABLE_THREADS': 'OFF',
+                        'LIBCXXABI_ENABLE_THREADS': 'OFF'},
+            lit_invocations=min_dialect_args)
+        
+            
     ]
 
 """ Old builders
