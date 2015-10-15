@@ -77,7 +77,7 @@ def addTestSuite(litDesc):
         command         = litCmd,
         description     = ['testing', litDesc.name],
         descriptionDone = ['test', litDesc.name],
-        workdir         = LibcxxTestRoot)
+        workdir         = libcxxTestRoot)
     
     
 
