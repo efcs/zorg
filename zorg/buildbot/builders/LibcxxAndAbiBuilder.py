@@ -69,7 +69,7 @@ def addTestSuite(litDesc):
     for key in litDesc.opts:
         litCmd += [' --param=' + key + '=' + litDesc.opts[key]]
     litCmd += litDesc.paths
-    if len(litDesc.paths == 0):
+    if len(litDesc.paths) == 0:
         litCmd += ['.']
     litCmd = [properties.WithProperties(arg) for arg in litCmd]
     return LitTestCommand(
