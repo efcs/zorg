@@ -119,7 +119,7 @@ def get_builders():
         getLibcxxBuilder('gcc-builder',
             cc='gcc', cxx='g++', lit_invocations=dialect_args),
         getLibcxxBuilder('static-libcxxabi-builder',
-            cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON'}
+            cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON'},
             lit_invocations=default_invocations),
         getLibcxxBuilder('abi-unstable',
             cmake_opts={'LIBCXX_ABI_UNSTABLE': 'ON'},
