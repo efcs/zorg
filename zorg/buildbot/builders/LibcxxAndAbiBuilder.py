@@ -63,7 +63,7 @@ def addTestSuite(litDesc):
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
     litCmd = ['%(builddir)s/llvm/utils/lit/lit.py',
-              '-sv', '--show-unsupported', '--show-xfail', '--threads=%(jobs)s'
+              '-sv', '--show-unsupported', '--show-xfail', '--threads=%(jobs)s',
               '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/lit.site.cfg']
 
     for key in litDesc.opts:
@@ -154,6 +154,12 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'copy.coverage',
             command         = ['cp', '-R', coverage_path, generate_coverage],
+            workdir         = build_path,
+            haltOnFailure   = True))
+        
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name            = 'mark.coverage.new',
+            command         = ['touch', '%s/new.lock' % generate_coverage]
             workdir         = build_path,
             haltOnFailure   = True))
 
