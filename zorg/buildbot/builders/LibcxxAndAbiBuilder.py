@@ -133,7 +133,6 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
             workdir         = build_path))
 
     # Test libc++
-    assert len(lit_invocations) >= 1
     for inv in lit_invocations:
         f.addStep(addTestSuite(inv, env=env))
         
