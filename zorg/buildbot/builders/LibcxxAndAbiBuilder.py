@@ -67,7 +67,7 @@ def addTestSuite(litDesc):
               '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/test/lit.site.cfg']
 
     for key in litDesc.opts:
-        litCmd += [' --param=' + key + '=' + litDesc.opts[key]]
+        litCmd += [('--param=' + key + '=' + litDesc.opts[key]).strip()]
     litCmd += litDesc.paths
     if len(litDesc.paths) == 0:
         litCmd += ['.']
