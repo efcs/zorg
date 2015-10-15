@@ -142,6 +142,8 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
         f.addStep(addTestSuite(inv))
         
     if generate_coverage:
+        coverage_path = properties.WithProperties(
+            '%(builddir)s/build/projects/libcxx/test/coverage/test_coverage/')
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'generate.coverage',
             command         = ['make', jobs_flag, 'generate-libcxx-coverage'],
