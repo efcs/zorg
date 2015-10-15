@@ -159,7 +159,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
         
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'mark.coverage.new',
-            command         = ['touch', '%s/new.lock' % generate_coverage]
+            command         = ['touch', '%s/new.lock' % generate_coverage],
             workdir         = build_path,
             haltOnFailure   = True))
 
