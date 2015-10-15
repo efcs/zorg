@@ -110,7 +110,7 @@ def get_builders():
         getLibcxxBuilder('libcxx-coverage',
             cmake_opts={
                 'LIBCXX_GENERATE_COVERAGE': 'ON',
-                'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/3.8.0/lib/linux/libclang_rt.profile-x86_64.a',
+                'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/3.8.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=min_dialect_args,
             generate_coverage='/shared/libcxx-coverage'),
         getLibcxxBuilder('gcc-builder',
