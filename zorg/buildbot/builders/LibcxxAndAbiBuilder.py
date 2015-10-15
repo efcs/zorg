@@ -20,6 +20,8 @@ reload(phased_builder_utils)
 class LitTestConfiguration:
     def __init__(self, name, opts={}, paths=[]):
         self.name = name
+        assert type(opts) is dict
+        assert type(paths) is list
         self.opts = dict(opts)
         self.paths = list(paths)
 
