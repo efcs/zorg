@@ -54,6 +54,7 @@ from zorg.buildbot.builders import Libiomp5Builder
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 reload(LibcxxAndAbiBuilder)
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
+from zorg.buildbot.builders.LibcxxAndAbiBuilder import LitTestConfiguration
 
 from zorg.buildbot.builders import LibcxxABIChecker
 reload(LibcxxABIChecker)
@@ -71,6 +72,29 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 reload(ABITestsuitBuilder)
 from zorg.buildbot.builders import ABITestsuitBuilder
 
+default_conf = LitTestConfiguration(
+    name = 'libcxx',
+    desc = 'libcxx')
+
+dialect_args = [
+    LitTestConfiguration(name='libcxx-cxx03', opts={'std': 'c++03'}),
+    LitTestConfiguration(name='libcxx-cxx11', opts={'std': 'c++11'}),
+    LitTestConfiguration(name='libcxx-cxx14', opts={'std': 'c++14'}),
+    LitTestConfiguration(name='libcxx-cxx1z', opts={'std': 'c++1z'})
+]
+
+def getLibcxxBuilder(name, cc, cxx, cmake_opts={}, lit_invocations=[]):
+    return {'name': name,
+     'slavenames': ['my_buildslave'],
+     'builddir' : name,
+     'factory': LibcxxCoverageBuilder.getLibcxxAndAbiBuilder(
+        env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+             'CC': cc, 'CXX': cxx},
+        cmake_extra_opts=cmake_opts,
+        lit_invocations=lit_invocations),
+    'category': 'libcxx',
+    'builder_type': 'nightly'}
+
 def get_builders():
     return [
         {'name': 'libcxx-coverage',
@@ -83,7 +107,8 @@ def get_builders():
                  'CC': 'clang', 'CXX': 'clang++'},
             lit_extra_opts={'std': 'c++1z', 'use_ccache': 'True'}),
         'category': 'libcxx',
-        'builder_type': 'nightly'}
+        'builder_type': 'nightly'},
+        getLibcxxBuilder('gcc-builder', cc='gcc', cxx='g++', lit_invocations=dialect_args)
     ]
 
 """ Old builders

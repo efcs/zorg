@@ -17,6 +17,11 @@ reload(lit_test_command)
 reload(artifacts)
 reload(phased_builder_utils)
 
+class LitTestConfiguration:
+    def __init__(self, name, opts={}, paths=[]):
+        self.name = name
+        self.opts = dict(opts)
+        self.paths = dict(paths)
 
 def getLibcxxWholeTree(f, src_root):
     llvm_path = src_root
@@ -51,9 +56,32 @@ def getLibcxxWholeTree(f, src_root):
 
     return f
 
+def addTestSuite(litDesc):
+    libcxxTestRoot = properties.WithProperties('%(builddir)s/llvm/projects/libcxx/test')
+    litExecutable = properties.WithProperties('%(builddir)s/llvm/utils/lit/lit.py')
 
-def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
-                           cmake_extra_opts={}, lit_extra_opts={}):
+    # Specify the max number of threads using properties so LIT doesn't use
+    # all the threads on the system.
+    litCmd = ['%(builddir)s/llvm/utils/lit/lit.py',
+              '-sv', '--show-unsupported', '--show-xfail', '--threads=%(jobs)s'
+              '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/lit.site.cfg']
+
+    for key in litDesc.opts:
+        litCmd += [' --param=' + key + '=' + litDesc.opts[key]]
+    litCmd += litDesc.paths
+    if len(litDesc.paths == 0):
+        litCmd += ['.']
+    litCmd = [properties.WithProperties(arg) for arg in litCmd]
+    return LitTestCommand(
+        name            = 'test.%s' % litDesc.name,
+        command         = litCmd,
+        description     = ['testing', litDesc.name],
+        descriptionDone = ['test', litDesc.name],
+        workdir         = LibcxxTestRoot)
+    
+    
+
+def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=[]):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -70,30 +98,6 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
 
     f = getLibcxxWholeTree(f, src_root)
 
-    if 'libcxxabi-has-no-threads' in additional_features:
-        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
-                           ' -DLIBCXXABI_HAS_NO_THREADS=1')
-
-    if 'libcpp-has-no-threads' in additional_features:
-        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
-                           ' -D_LIBCPP_HAS_NO_THREADS')
-
-    if 'libcpp-has-no-monotonic-clock' in additional_features:
-        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
-                           ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
-
-    # Specify the max number of threads using properties so LIT doesn't use
-    # all the threads on the system.
-    litTestArgs = '-sv --show-unsupported --show-xfail --threads=%(jobs)s'
-
-    if additional_features:
-        litTestArgs += (' --param=additional_features=' +
-                       ','.join(additional_features))
-
-    for key in lit_extra_opts:
-        litTestArgs += (' --param=' + key + '=' + lit_extra_opts[key])
-
-    cmake_opts = [properties.WithProperties('-DLLVM_LIT_ARGS='+litTestArgs)]
     for key in cmake_extra_opts:
         cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
 
@@ -129,11 +133,8 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
         workdir         = build_path))
 
     # Test libc++
-    f.addStep(LitTestCommand(
-        name            = 'test.libcxx',
-        command         = ['make', 'check-libcxx'],
-        description     = ['testing', 'libcxx'],
-        descriptionDone = ['test', 'libcxx'],
-        workdir         = build_path))
+    assert len(lit_invocations) >= 1
+    for inv in lit_invocations:
+        f.addStep(addTestSuite(inv))
 
     return f
