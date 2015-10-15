@@ -90,7 +90,7 @@ tsan_args = []
 
 def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
                      lit_invocations=default_invocations,
-                     enable_libcxxabi=False):
+                     enable_libcxxabi=False, generate_coverage=None):
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
@@ -99,23 +99,20 @@ def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
              'LIBCXX_USE_CCACHE': '1',
              'CC': cc, 'CXX': cxx},
         cmake_extra_opts=cmake_opts,
-        lit_invocations=lit_invocations),
+        lit_invocations=lit_invocations,
+        enable_libcxxabi=enable_libcxxabi,
+        generate_coverage=generate_coverage),
     'category': 'libcxx',
     'builder_type': 'nightly'}
 
 def get_builders():
     return [
-        {'name': 'libcxx-coverage',
-         'slavenames': ['my_buildslave'],
-         'builddir' : 'libcxx-coverage',
-         'factory': LibcxxCoverageBuilder.getLibcxxCoverageBuilder(
-             '/shared/libcxx-coverage/',
-            '/usr/local/lib/clang/3.7.0/lib/linux/libclang_rt.profile-x86_64.a',
-            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++1z', 'use_ccache': 'True'}),
-        'category': 'libcxx',
-        'builder_type': 'nightly'},
+        getLibcxxBuilder('libcxx-coverage',
+            cmake_opts={
+                'LIBCXX_GENERATE_COVERAGE': 'ON',
+                'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/3.8.0/lib/linux/libclang_rt.profile-x86_64.a',
+            lit_invocations=min_dialect_args,
+            generate_coverage='/shared/libcxx-coverage'),
         getLibcxxBuilder('gcc-builder',
             cc='gcc', cxx='g++', lit_invocations=dialect_args),
         getLibcxxBuilder('static-libcxxabi-builder',
