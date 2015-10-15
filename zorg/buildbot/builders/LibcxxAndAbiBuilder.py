@@ -64,7 +64,7 @@ def addTestSuite(litDesc):
     # all the threads on the system.
     litCmd = ['%(builddir)s/llvm/utils/lit/lit.py',
               '-sv', '--show-unsupported', '--show-xfail', '--threads=%(jobs)s',
-              '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/lit.site.cfg']
+              '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/test/lit.site.cfg']
 
     for key in litDesc.opts:
         litCmd += [' --param=' + key + '=' + litDesc.opts[key]]
