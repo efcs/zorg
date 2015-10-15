@@ -56,7 +56,7 @@ def getLibcxxWholeTree(f, src_root):
 
     return f
 
-def addTestSuite(litDesc):
+def addTestSuite(litDesc, env={}):
     libcxxTestRoot = properties.WithProperties('%(builddir)s/llvm/projects/libcxx/test')
     litExecutable = properties.WithProperties('%(builddir)s/llvm/utils/lit/lit.py')
 
@@ -77,6 +77,7 @@ def addTestSuite(litDesc):
         command         = litCmd,
         description     = ['testing', litDesc.name],
         descriptionDone = ['test', litDesc.name],
+        env             = env,
         workdir         = libcxxTestRoot)
     
     
