@@ -120,7 +120,7 @@ def get_builders():
             cc='gcc', cxx='g++', lit_invocations=dialect_args),
         getLibcxxBuilder('static-libcxxabi-builder',
             cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON'}
-            lit_invocations=default_invocations)
+            lit_invocations=default_invocations),
         getLibcxxBuilder('abi-unstable',
             cmake_opts={'LIBCXX_ABI_UNSTABLE': 'ON'},
             lit_invocations=min_dialect_args),
