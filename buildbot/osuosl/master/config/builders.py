@@ -60,10 +60,6 @@ from zorg.buildbot.builders import LibcxxABIChecker
 reload(LibcxxABIChecker)
 from zorg.buildbot.builders import LibcxxABIChecker
 
-from zorg.buildbot.builders import LibcxxCoverageBuilder
-reload(LibcxxCoverageBuilder)
-from zorg.buildbot.builders import LibcxxCoverageBuilder
-
 from zorg.buildbot.builders import SphinxDocsBuilder
 reload(SphinxDocsBuilder)
 from zorg.buildbot.builders import SphinxDocsBuilder
