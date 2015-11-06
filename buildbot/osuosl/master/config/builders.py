@@ -289,7 +289,7 @@ def _get_clang_builders():
          'builddir' :"clang-ppc64-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
                                               nt_flags=['--cflag','-mcpu=native', '-j8'],
-                                              jobs=4,  use_pty_in_tests=True,
+                                              jobs=16,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
         {'name' : "clang-ppc64-elf-linux2",
@@ -305,8 +305,8 @@ def _get_clang_builders():
          'slavenames' :["ppc64le-clang-lnt-test"],
          'builddir' :"clang-lnt-ppc64le-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
-                                              nt_flags=['--cflag','-mcpu=native'],
-                                              jobs=4,  use_pty_in_tests=True,
+                                              nt_flags=['--cflag','-mcpu=native', '-j6'],
+                                              jobs=6,  use_pty_in_tests=True,
                                               testerName='ppc64le-plain', run_cxx_tests=True)},
 
         {'name' : "ppc64le-clang",
@@ -392,7 +392,7 @@ def _get_clang_builders():
                                               jobs=4, use_pty_in_tests=True, clean=False,
                                               testerName='LNT-TestOnly-AArch64', run_cxx_tests=True)},
         {'name': "perf-x86_64-penryn-O3",
-         'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5", "pollyperf15"],
+         'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5"],
          'builddir':"perf-x86_64-penryn-O3",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     #nt_flags=['--multisample=10', '--rerun'],
@@ -461,6 +461,7 @@ def _get_polly_builders():
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '-j16' ],
                                                     reportBuildslave=False,
+                                                    build_type='Release+Asserts',
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-fast')},
 
@@ -470,6 +471,7 @@ def _get_polly_builders():
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j16', '--cflag=-lgomp' ],
                                                     reportBuildslave=False,
+                                                    build_type='Release+Asserts',
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-parallel-fast')},
 
@@ -477,8 +479,9 @@ def _get_polly_builders():
          'slavenames':["pollyperf6"],
          'builddir': "perf-x86_64-penryn-O3-polly-unprofitable",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-process-unprofitable' ],
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-process-unprofitable', '-j16'],
                                                     reportBuildslave=False,
+                                                    build_type='Release+Asserts',
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-unprofitable')},
 
@@ -491,7 +494,27 @@ def _get_polly_builders():
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
-                                                    testerName='x86_64-penryn-O3-polly')}
+                                                    testerName='x86_64-penryn-O3-polly')},
+        {'name': "perf-x86_64-penryn-O3-polly-before-vectorizer",
+         'slavenames':["pollyperf15"],
+         'builddir':"perf-x86_64-penryn-O3-polly-before-vectorizer",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    #nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-position=before-vectorizer' ],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
+                                                    testerName='x86_64-penryn-O3-polly-before-vectorizer')},
+        {'name': "perf-x86_64-penryn-O3-polly-before-vectorizer-detect-only",
+         'slavenames':["pollyperf15"],
+         'builddir':"perf-x86_64-penryn-O3-polly-before-vectorizer-detect-only",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    #nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-position=before-vectorizer', '--mllvm=-polly-only-scop-detection'],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
+                                                    testerName='x86_64-penryn-O3-polly-before-vectorizer-detect-only')}
        ]
 
 # LLDB builders.
@@ -512,6 +535,13 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
                     buildAndroid=True,
+                    runTest=False)},
+        {'name': "lldb-amd64-ninja-netbsd7",
+         'slavenames': ["lldb-amd64-ninja-netbsd7"],
+         'builddir': "build",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False,
                     runTest=False)}
        ]
 
