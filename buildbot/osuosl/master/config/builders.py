@@ -109,6 +109,7 @@ def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
     'builder_type': 'nightly'}
 
 def get_builders():
+    gcc_dialect_args = del dialect_args()[0] # Remove C++03
     return [
         getLibcxxBuilder('libcxx-coverage',
             cmake_opts={
@@ -119,7 +120,7 @@ def get_builders():
         
         getLibcxxBuilder('gcc-builder',
             cc='/opt/gcc-5.3/bin/gcc', cxx='/opt/gcc-5.3/bin/g++',
-            lit_invocations=dialect_args()),
+            lit_invocations=gcc_dialect_args),
         
         getLibcxxBuilder('static-libcxxabi-builder',
             cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY': 'ON'}),
