@@ -118,7 +118,7 @@ def get_builders():
             generate_coverage='/shared/libcxx-coverage'),
         
         getLibcxxBuilder('gcc-builder',
-            cc='/opt/gcc-5.2.0/bin/gcc', cxx='/opt/gcc-5.2.0/bin/g++',
+            cc='/opt/gcc-5.3.0/bin/gcc', cxx='/opt/gcc-5.3/bin/g++',
             lit_invocations=dialect_args()),
         
         getLibcxxBuilder('static-libcxxabi-builder',
