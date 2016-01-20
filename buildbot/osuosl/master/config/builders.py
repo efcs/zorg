@@ -66,20 +66,10 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
-        {'name': "llvm-ppc64-linux1",
-         'slavenames':["ppc64be-llvm"],
-         'builddir':"llvm-ppc64",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
-
-        {'name': "ppc64le-llvm",
-         'slavenames':["ppc64le-llvm"],
-         'builddir':"llvm-ppc64le-1",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=2, clean=False, timeout=20, config_name='Release+Asserts')},
-
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
          'builddir':"llvm-s390x-linux1",
-         'factory': LLVMBuilder.getLLVMBuildFactory("s390x-linux-gnu", jobs=4, clean=False, timeout=20)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("s390x-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
 
         {'name': "llvm-mips-linux",
          'slavenames':["mipsswbrd002"],
@@ -142,8 +132,7 @@ def _get_clang_fast_builders():
                      triple="x86_64-scei-ps4",
                      prefixCommand=None, # This is a designaed builder, so no need to be nice.
                      env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
-
-        ]
+       ]
 
 # Clang builders.
 def _get_clang_builders():
@@ -200,7 +189,7 @@ def _get_clang_builders():
          'builddir':"clang-cmake-armv7-a15-selfhost-neon",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=2,
-                      clean=False,
+                      clean=True,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
                       testStage1=True,
@@ -241,7 +230,7 @@ def _get_clang_builders():
          'builddir':"clang-cmake-armv7-a15-selfhost",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
-                      clean=False,
+                      clean=True,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
                       testStage1=False,
@@ -268,8 +257,6 @@ def _get_clang_builders():
                       nt_flags=['--cflag', '-mcpu=cortex-a57'],
                )},
 
-        # This will ultimately be a self-host bot, even though the config does
-        # not reflect that today.
         {'name': 'clang-x86-win2008-selfhost',
          'slavenames': ['windows-gcebot1'],
          'builddir': 'clang-x86-win2008-selfhost',
@@ -278,62 +265,63 @@ def _get_clang_builders():
                         vs='%VS120COMNTOOLS%',
                         vs_target_arch='x86',
                         checkout_compiler_rt=False,
-                        testStage1=False,
+                        testStage1=True,
                         useTwoStage=True,
                         stage1_config='Release',
                         stage2_config='Release',
                         extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
-        {'name' : "clang-ppc64-elf-linux",
+        {'name' : "clang-ppc64be-linux-lnt",
          'slavenames' :["ppc64be-clang-lnt-test"],
-         'builddir' :"clang-ppc64-1",
+         'builddir' :"clang-ppc64be-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
-                                              nt_flags=['--cflag','-mcpu=native', '-j8'],
+                                              nt_flags=['--cflag','-mcpu=native', '-j16'],
                                               jobs=16,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
-        {'name' : "clang-ppc64-elf-linux2",
-         'slavenames' :["ppc64be-clang-multistage-test"],
-         'builddir' :"clang-ppc64-2",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64-elf-linux',
-                                                       useTwoStage=True, test=True,
-                                                       checkout_compiler_rt=True,
-                                                       stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts')},
-
-        {'name' : "ppc64le-clanglnt",
+        {'name' : "clang-ppc64le-linux-lnt",
          'slavenames' :["ppc64le-clang-lnt-test"],
-         'builddir' :"clang-lnt-ppc64le-1",
+         'builddir' :"clang-ppc64le-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
                                               nt_flags=['--cflag','-mcpu=native', '-j6'],
                                               jobs=6,  use_pty_in_tests=True,
                                               testerName='ppc64le-plain', run_cxx_tests=True)},
 
-        {'name' : "ppc64le-clang",
-         'slavenames' :["ppc64le-clang-multistage-test"],
-         'builddir' :"clang-ppc64le-1",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64le-elf-linux',
-                                                       useTwoStage=True, test=True,
-                                                       checkout_compiler_rt=True,
-                                                       stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts')},
+        {'name' : "clang-ppc64be-linux-multistage",
+         'slavenames' :["ppc64be-clang-multistage-test"],
+         'builddir' :"clang-ppc64be-multistage",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=True,
+                                                            stage1_config='Release',
+                                                            stage2_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
-        # Mips check-all with CMake builder
-        # We currently have to force CMAKE_HOST_TRIPLE and
-        # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
-        # correct for the processor but it's currently not possible to emit O32
-        # code using a mips64-* triple. This is a bug and should be fixed soon.
-        # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
-        # run.
-        {'name': "clang-cmake-mips",
-         'slavenames':["mips-kl-m001"],
-         'builddir':"clang-cmake-mips",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                         clean=False,
-                         checkout_compiler_rt=True,
-                         extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
-                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu",
-                                           "-DLLVM_TARGET_ARCH=Mips"])},
+        {'name' : "clang-ppc64le-linux-multistage",
+         'slavenames' :["ppc64le-clang-multistage-test"],
+         'builddir' :"clang-ppc64le-multistage",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=True,
+                                                            stage1_config='Release',
+                                                            stage2_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+
+        {'name': "clang-ppc64be-linux",
+         'slavenames':["ppc64be-clang-test"],
+         'builddir':"clang-ppc64be",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=False,
+                                                            stage1_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
+         'category' : 'clang'},
+
+        {'name': "clang-ppc64le-linux",
+         'slavenames':["ppc64le-clang-test"],
+         'builddir':"clang-ppc64le",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=False,
+                                                            stage1_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
+         'category' : 'clang'},
 
         # ABI test-suite with CMake builder
         {'name'          : "clang-x86_64-linux-abi-test",
@@ -430,22 +418,6 @@ def _get_clang_builders():
                         extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                           '-DLLVM_TARGETS_TO_BUILD=X86'])},
         ]
-# Offline
-# Cortex-A9 triple check-all bots with autoconf builder
-{'name': "clang-native-arm-cortex-a9",
- 'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
- 'builddir':"clang-native-arm-cortex-a9",
- 'factory' : ClangBuilder.getClangBuildFactory(
-               stage1_config='Release+Asserts',
-               clean=False,
-               env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
-               extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
-                                     '--host=armv7l-unknown-linux-gnueabihf',
-                                     '--target=armv7l-unknown-linux-gnueabihf',
-                                     '--with-cpu=cortex-a9',
-                                     '--with-fpu=neon',
-                                     '--with-float=hard',
-                                     '--enable-targets=arm'])},
 
 # Polly builders.
 def _get_polly_builders():
@@ -542,6 +514,13 @@ def _get_lldb_builders():
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
+                    runTest=False)},
+        {'name': "lldb-amd64-ninja-freebsd11",
+         'slavenames': ["lldb-amd64-ninja-freebsd11"],
+         'builddir': "scratch",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False,
                     runTest=False)}
        ]
 
@@ -618,14 +597,14 @@ def _get_sanitizer_builders():
                         common_cmake_options=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
                                               '-DLIBCXXABI_USE_LLVM_UNWINDER=ON'])},
 
-          {'name': "sanitizer-ppc64-linux1",
+          {'name': "sanitizer-ppc64be-linux",
            'slavenames' :["ppc64be-sanitizer"],
-           'builddir': "sanitizer-ppc64-1",
+           'builddir': "sanitizer-ppc64be",
            'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
           {'name': "sanitizer-ppc64le-linux",
            'slavenames' :["ppc64le-sanitizer"],
-           'builddir': "sanitizer-ppc64le-1",
+           'builddir': "sanitizer-ppc64le",
            'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
           {'name': "sanitizer-windows",
@@ -644,7 +623,7 @@ def _get_sanitizer_builders():
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
           ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-thumbv7-a15-full-sh",
@@ -652,14 +631,14 @@ def _get_sanitizer_builders():
            'builddir':"clang-cmake-thumbv7-a15-full-sh",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         jobs=2,
-                        clean=False,
+                        clean=True,
                         useTwoStage=True,
                         testStage1=True,
                         env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
@@ -667,7 +646,7 @@ def _get_sanitizer_builders():
          'builddir':"clang-cmake-aarch64-full",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=8,
-                      clean=False,
+                      clean=True,
                       checkout_compiler_rt=True,
                       test=True,
                       useTwoStage=True,
@@ -703,11 +682,47 @@ def _get_sanitizer_builders():
            'builddir':"clang-native-aarch64-full",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         jobs=4,
-                        clean=False,
+                        clean=True,
                         useTwoStage=True,
                         testStage1=True,
-                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
+          # Mips check-all with CMake builder
+          # We currently have to force CMAKE_HOST_TRIPLE and
+          # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+          # correct for the processor but it's currently not possible to emit O32
+          # code using a mips64-* triple. This is a bug and should be fixed soon.
+          # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
+          # run.
+          {'name': "clang-cmake-mips",
+           'slavenames':["mips-kl-m001"],
+           'builddir':"clang-cmake-mips",
+           'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
+                           clean=False,
+                           checkout_compiler_rt=True,
+                           extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
+                                             "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu",
+                                             "-DLLVM_TARGET_ARCH=Mips"],
+                           stage1_upload_directory='clang-cmake-mips',
+                           env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'})},
+          # Mips check-all with CMake builder
+          # We currently have to force CMAKE_HOST_TRIPLE and
+          # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+          # correct for the processor but it's currently not possible to emit O32
+          # code using a mips64-* triple. This is a bug and should be fixed soon.
+          # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
+          # run.
+          {'name': "clang-cmake-mipsel",
+           'slavenames':["mips-kl-erpro001"],
+           'builddir':"clang-cmake-mipsel",
+           'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
+                           clean=False,
+                           checkout_compiler_rt=True,
+                           extra_cmake_args=["-DLLVM_HOST_TRIPLE=mipsel-unknown-linux-gnu",
+                                             "-DLLVM_DEFAULT_TARGET_TRIPLE=mipsel-unknown-linux-gnu",
+                                             "-DLLVM_TARGET_ARCH=Mips"],
+                           stage1_upload_directory='clang-cmake-mipsel',
+                           env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'})},
           ]
 
 def _get_openmp_builders():
@@ -738,6 +753,15 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'}),
+         'category': 'libcxx'},
+
+        # x86_64 -fno-exceptions libcxx builder
+        {'name': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
+         'slavenames': ['gribozavr4'],
+         'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+             env={'CC': 'clang', 'CXX': 'clang++'},
+             cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'}),
          'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
@@ -846,24 +870,9 @@ def _get_libcxx_builders():
 def _get_on_demand_builders():
     return [
         ]
-# Offline
-{'name': "clang-native-mingw32-win7",
- 'slavenames':["as-bldslv7"],
- 'builddir':"clang-native-mingw32-win7",
- 'category':'clang',
- 'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
-                                                       useTwoStage=True, test=False,
-                                                       stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts')},
 
 def _get_experimental_scheduled_builders():
     return [
-        {'name': "llvm-ppc64-linux2",
-         'slavenames':["ppc64be-llvm-quick"],
-         'builddir':"llvm-ppc64-2",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts'),
-         'category' : 'llvm'},
-
         {'name': "clang-atom-d525-fedora",
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d525-fedora",
@@ -1056,8 +1065,31 @@ def get_builders():
  'slavenames': ["dunbar1"],
  'builddir': "llvm-i686",
  'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", jobs=2, enable_shared=True)},
- 
+
 # Clang builders
+{'name': "clang-native-mingw32-win7",
+ 'slavenames':["as-bldslv7"],
+ 'builddir':"clang-native-mingw32-win7",
+ 'category':'clang',
+ 'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
+                                                       useTwoStage=True, test=False,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts')},
+# Cortex-A9 triple check-all bots with autoconf builder
+{'name': "clang-native-arm-cortex-a9",
+ 'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
+ 'builddir':"clang-native-arm-cortex-a9",
+ 'factory' : ClangBuilder.getClangBuildFactory(
+               stage1_config='Release+Asserts',
+               clean=False,
+               env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
+               extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
+                                     '--host=armv7l-unknown-linux-gnueabihf',
+                                     '--target=armv7l-unknown-linux-gnueabihf',
+                                     '--with-cpu=cortex-a9',
+                                     '--with-fpu=neon',
+                                     '--with-float=hard',
+                                     '--enable-targets=arm'])},
 {'name' : "clang-x64-ninja-win7-debug",
  'slavenames' : ["windows7-buildbot"],
  'builddir' : "clang-x64-ninja-win7-debug",

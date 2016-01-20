@@ -11,6 +11,8 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
+CHECK_LIBCXX=${CHECK_LIBCXX:-1}
+CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
 STAGE2_MSAN_DIR=llvm_build_msan
@@ -20,9 +22,8 @@ STAGE2_LIBCXX_UBSAN_DIR=libcxx_build_ubsan
 STAGE2_UBSAN_DIR=llvm_build_ubsan
 STAGE3_ASAN_DIR=llvm_build2_asan
 STAGE3_MSAN_DIR=llvm_build2_msan
-MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=3"
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=20"
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -64,7 +65,7 @@ echo @@@BUILD_STEP build stage3/msan clang@@@
 mkdir -p ${STAGE3_MSAN_DIR}
 
 clang_msan_path=$ROOT/${STAGE2_MSAN_DIR}/bin
-cmake_stage3_msan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_msan_path}/clang -DCMAKE_CXX_COMPILER=${clang_msan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=15"
+cmake_stage3_msan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_msan_path}/clang -DCMAKE_CXX_COMPILER=${clang_msan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=32"
 
 (cd ${STAGE3_MSAN_DIR} && cmake ${cmake_stage3_msan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@
@@ -89,7 +90,7 @@ echo @@@BUILD_STEP build stage3/asan clang@@@
 mkdir -p ${STAGE3_ASAN_DIR}
 
 clang_asan_path=$ROOT/${STAGE2_ASAN_DIR}/bin
-cmake_stage3_asan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_asan_path}/clang -DCMAKE_CXX_COMPILER=${clang_asan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=10"
+cmake_stage3_asan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_asan_path}/clang -DCMAKE_CXX_COMPILER=${clang_asan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=32"
 
 (cd ${STAGE3_ASAN_DIR} && cmake ${cmake_stage3_asan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@

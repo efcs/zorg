@@ -270,14 +270,65 @@ def lldb_builder():
         "xcodebuild",
         "-arch", "x86_64",
         "-configuration", "Debug",
-        "-scheme", "lldb-tool",
+        "-scheme", "desktop",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
-    header("Make lldb-tool")
+    header("Build Xcode desktop scheme")
     run_cmd("lldb", xcodebuild_cmd)
     footer()
 
+    # Run C++ test suite (gtests)
+
+    xcodebuild_cmd = [
+        "xcodebuild",
+        "-arch", "x86_64",
+        "-configuration", "Debug",
+        "-scheme", "lldb-gtest",
+        "-derivedDataPath", conf.lldbbuilddir(),
+        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+
+    header("Build Xcode lldb-gtest scheme")
+    run_cmd("lldb", xcodebuild_cmd)
+    footer()
+
+    # Run LLDB Python test suite
+
+    xcodebuild_cmd = [
+        "xcodebuild",
+        "-arch", "x86_64",
+        "-configuration", "Debug",
+        "-scheme", "lldb-python-test-suite",
+        "-derivedDataPath", conf.lldbbuilddir(),
+        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+
+    header("Build Xcode lldb-python-test-suite target")
+    # For the unit tests, we don't want to stop the build if there are
+    # build errors.  We allow the JUnit/xUnit parser to pick this up.
+    run_cmd_errors_okay("lldb", xcodebuild_cmd)
+    footer()
+
+def static_analyzer_benchmarks_builder():
+  """Run static analyzer benchmarks"""
+  header("Static Analyzer Benchmarks")
+
+  benchmark_script = conf.workspace + "/utils-analyzer/SATestBuild.py"
+  benchmarks_dir = conf.workspace + "/clang-analyzer-benchmarks/"
+
+  compiler_bin_dir = conf.workspace + "/host_compiler/bin/"
+  scanbuild_bin_dir = conf.workspace + "/tools-scanbuild/bin/"
+
+  old_path = os.environ.get("PATH", "")
+  env = dict(os.environ, PATH=compiler_bin_dir + os.pathsep +
+                              scanbuild_bin_dir + os.pathsep +
+                              old_path)
+
+  benchmark_cmd = [benchmark_script,
+                   "--strictness", "2"
+                  ]
+  run_cmd(benchmarks_dir, benchmark_cmd, env=env)
+
+  footer()
 
 def check_repo_state(path):
     """Check the SVN repo at the path has all the
@@ -479,7 +530,7 @@ def build_upload_artifact():
     run_cmd(conf.workspace, ln_cmd)
 
 
-def run_cmd(working_dir, cmd):
+def run_cmd(working_dir, cmd, env=None):
     """Run a command in a working directory, and make sure it returns zero."""
     old_cwd = os.getcwd()
     cmd_to_print = ' '.join([quote_sh_string(x) for x in cmd])
@@ -489,7 +540,7 @@ def run_cmd(working_dir, cmd):
     start_time = datetime.datetime.now()
     if not os.environ.get('TESTING', False):
         os.chdir(working_dir)
-        subprocess.check_call(cmd)
+        subprocess.check_call(cmd, env=env)
         os.chdir(old_cwd)
     end_time = datetime.datetime.now()
 
@@ -497,9 +548,31 @@ def run_cmd(working_dir, cmd):
         (end_time-start_time).seconds))
 
 
+def run_cmd_errors_okay(working_dir, cmd, env=None):
+    """Run a command in a working directory, reporting return value.
+    Non-zero exit codes do not generate an exception.
+    """
+    old_cwd = os.getcwd()
+    cmd_to_print = ' '.join([quote_sh_string(x) for x in cmd])
+    sys.stdout.write("cd {}\n{}\n".format(working_dir, cmd_to_print))
+    sys.stdout.flush()
+
+    start_time = datetime.datetime.now()
+    if not os.environ.get('TESTING', False):
+        try:
+            os.chdir(working_dir)
+            result = subprocess.call(cmd, env=env)
+        finally:
+            os.chdir(old_cwd)
+    end_time = datetime.datetime.now()
+
+    logging.info("Command took {} seconds: return code {}".format(
+        (end_time-start_time).seconds, result))
+
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact',
-                'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-llvm']
+                'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-llvm',
+                'static-analyzer-benchmarks']
 
 
 def parse_args():
@@ -559,6 +632,8 @@ def main():
             fetch_compiler()
         elif args.build_type == 'artifact':
             build_upload_artifact()
+        elif args.build_type == 'static-analyzer-benchmarks':
+            static_analyzer_benchmarks_builder()
     except subprocess.CalledProcessError as exct:
         print "Command failed", exct.message
         print "Command:", exct.cmd
