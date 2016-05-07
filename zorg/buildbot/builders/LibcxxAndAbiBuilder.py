@@ -128,6 +128,11 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
               name='build.libcxx', command=['make', jobs_flag, 'cxx'],
               haltOnFailure=True, workdir=build_path))
 
+    f.addStep(buildbot.steps.shell.ShellCommand(
+        name='build.libcxxexperimental',
+        command=['make', jobs_flag, 'cxx_experimental'],
+        haltOnFailure=True, workdir=build_path))
+
     # Test libc++abi
     if enable_libcxxabi and not generate_coverage:
         f.addStep(LitTestCommand(
