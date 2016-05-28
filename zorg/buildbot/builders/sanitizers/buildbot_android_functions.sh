@@ -128,7 +128,7 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     # Nexus Player does not have enough RAM to run ASan tests reliably.
     # Luckily, none of our tests need the application runtime, and killing
     # that can free several hundred megs of RAM.
-    if [[ $_build_flavor == fugu* ]]; then
+    if [[ $_build_flavor == fugu* || $_build_flavor == volantis* ]]; then
       $ADB shell stop
       sleep 2
     fi
@@ -157,12 +157,18 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/
     $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/
 
+    if [[ $_arch == aarch64 || $_arch == x86_64 ]]; then
+      ASANWRAPPER=
+    else
+      ASANWRAPPER=asanwrapper
+    fi
+
     NUM_SHARDS=7
     for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
         $ADB shell "ASAN_OPTIONS=start_deactivated=1 \
           GTEST_TOTAL_SHARDS=$NUM_SHARDS \
           GTEST_SHARD_INDEX=$SHARD \
-          asanwrapper $DEVICE_ROOT/AsanTest; \
+          $ASANWRAPPER $DEVICE_ROOT/AsanTest; \
           echo \$? >$DEVICE_ROOT/error_code"
         $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo $_step_failure
         $ADB shell " \

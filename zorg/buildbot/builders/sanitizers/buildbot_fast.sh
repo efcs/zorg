@@ -11,15 +11,18 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
+CHECK_LIBCXX=${CHECK_LIBCXX:-1}
+CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
 STAGE2_MSAN_DIR=llvm_build_msan
+STAGE2_UBSAN_DIR=llvm_build_ubsan
 STAGE2_LIBCXX_MSAN_DIR=libcxx_build_msan
 STAGE2_LIBCXX_ASAN_DIR=libcxx_build_asan
-HOST_CLANG_REVISION=223108
-MAKE_JOBS=${MAX_MAKE_JOBS:-16}
+STAGE2_LIBCXX_UBSAN_DIR=libcxx_build_ubsan
+HOST_CLANG_REVISION=253530
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=3"
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=20"
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -49,8 +52,10 @@ else
   # changed. Clobber the build trees.
   rm -rf ${STAGE2_LIBCXX_MSAN_DIR}
   rm -rf ${STAGE2_LIBCXX_ASAN_DIR}
+  rm -rf ${STAGE2_LIBCXX_UBSAN_DIR}
   rm -rf ${STAGE2_MSAN_DIR}
   rm -rf ${STAGE2_ASAN_DIR}
+  rm -rf ${STAGE2_UBSAN_DIR}
 
   build_stage1_clang
 
@@ -73,3 +78,9 @@ check_stage2_msan
 build_stage2_asan
 
 check_stage2_asan
+
+# Stage 2 / UndefinedBehaviorSanitizer
+
+build_stage2_ubsan
+
+check_stage2_ubsan
