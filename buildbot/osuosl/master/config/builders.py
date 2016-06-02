@@ -136,7 +136,7 @@ def get_builders():
             lit_invocations=gcc_dialect_args),
         
         getLibcxxBuilder('static-libcxxabi-builder',
-            cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY': 'ON'}),
+            cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY': 'ON', 'LIBCXXABI_ENABLE_SHARED': 'OFF'}),
         
         getLibcxxBuilder('abi-unstable',
             cmake_opts={'LIBCXX_ABI_UNSTABLE': 'ON'},
