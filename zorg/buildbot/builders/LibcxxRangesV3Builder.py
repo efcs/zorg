@@ -5,7 +5,9 @@ import buildbot.process.factory
 import buildbot.steps.shell
 import buildbot.process.properties as properties
 
-from buildbot.steps.source.svn import SVN, Git
+from buildbot.steps.source.svn import SVN
+from buildbot.steps.source.git import Git
+
 
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.util.artifacts as artifacts
