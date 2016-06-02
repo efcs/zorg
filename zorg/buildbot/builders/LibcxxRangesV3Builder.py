@@ -111,7 +111,7 @@ def getLibcxxRangesV3Builder(f=None, env={}):
 
     # Configure Ranges
     libcxx_compile_args = properties.WithProperties(
-        "-DCMAKE_CXX_FLAGS=-stdlib=libc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/")
+        '-DCMAKE_CXX_FLAGS=-nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/')
     libcxx_link_args = properties.WithProperties(
         '-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
     cmake_flags = [libcxx_compile_args]
