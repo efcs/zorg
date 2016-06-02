@@ -25,7 +25,7 @@ def getLibcxxWholeTree(f, src_root):
         '%(builddir)s/llvm/projects/libcxx')
     libcxxabi_path = properties.WithProperties(
         '%(builddir)s/llvm/projects/libcxxabi')
-    rangesv3_path = properties.WithProperties(
+    ranges_path = properties.WithProperties(
         '%(builddir)s/ranges')
 
     mode = 'full'
