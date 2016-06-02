@@ -113,11 +113,12 @@ def getLibcxxRangesV3Builder(f=None, env={}):
     libcxx_compile_args = properties.WithProperties(
         '-stdlib=libc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/')
     libcxx_link_args = properties.WithProperties(
-        '-L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
+        '-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
+    cmake_flags = ['-DCMAKE_CXX_FLAGS="%s"' % libcxx_compile_args]
     env_cp = dict(env)
-    env_cp.update({'CXXFLAGS': libcxx_compile_args, 'LDFLAGS': libcxx_link_args})
+    env_cp.update({'LDFLAGS': libcxx_link_args})
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='cmake.ranges', command=['cmake', ranges_src_root],
+        name='cmake.ranges', command=['cmake', ranges_src_root] + cmake_flags,
         haltOnFailure=True, workdir=ranges_build_path, env=env_cp))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
