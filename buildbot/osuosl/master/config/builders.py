@@ -119,7 +119,7 @@ def getLibcxxRangesBuilder(name, cc='clang', cxx='clang++'):
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
-     'factory': LibcxxRangesV3BuilderBuilder.getLibcxxRangesV3Builder(
+     'factory': LibcxxRangesV3Builder.getLibcxxRangesV3Builder(
         env=env),
     'category': 'libcxx',
     'builder_type': 'nightly'}
