@@ -112,7 +112,7 @@ def getLibcxxRangesV3Builder(f=None, env={}):
         '-nostdinc++ -stdlib=libc++ -isystem=%(builddir)s/llvm/projects/libcxx/include/')
     libcxx_link_args = properties.WithProperties(
         '-L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
-    env += {'CXXFLAGS': libcxx_compile_args, 'LDFLAGS', libcxx_link_args}
+    env += {'CXXFLAGS': libcxx_compile_args, 'LDFLAGS': libcxx_link_args}
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='cmake.ranges', command=['cmake', ranges_src_root] + cmake_opts,
         haltOnFailure=True, workdir=ranges_build_path, env=env))
