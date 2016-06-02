@@ -111,7 +111,7 @@ def getLibcxxRangesV3Builder(f=None, env={}):
 
     # Configure Ranges
     libcxx_compile_args = properties.WithProperties(
-        '-nostdinc++ -stdlib=libc++ -isystem=%(builddir)s/llvm/projects/libcxx/include/')
+        '-nostdinc++ -isystem=%(builddir)s/llvm/projects/libcxx/include/')
     libcxx_link_args = properties.WithProperties(
         '-L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
     env_cp = dict(env)
