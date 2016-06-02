@@ -56,6 +56,10 @@ reload(LibcxxAndAbiBuilder)
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders.LibcxxAndAbiBuilder import LitTestConfiguration
 
+from zorg.buildbot.builders import LibcxxRangesV3Builder
+reload(LibcxxRangesV3Builder)
+from zorg.buildbot.builders import LibcxxRangesV3Builder
+
 from zorg.buildbot.builders import LibcxxABIChecker
 reload(LibcxxABIChecker)
 from zorg.buildbot.builders import LibcxxABIChecker
@@ -108,6 +112,19 @@ def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
     'category': 'libcxx',
     'builder_type': 'nightly'}
 
+
+def getLibcxxRangesBuilder(name, cc='clang', cxx='clang++'):
+    env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+         'CC': cc, 'CXX': cxx}
+    del env['LIBCXX_USE_CCACHE']
+    return {'name': name,
+     'slavenames': ['my_buildslave'],
+     'builddir' : name,
+     'factory': LibcxxRangesV3BuilderBuilder.getLibcxxRangesV3Builder(
+        env=env),
+    'category': 'libcxx',
+    'builder_type': 'nightly'}
+
 def get_builders():
     gcc_dialect_args = dialect_args() 
     del gcc_dialect_args[0] # Remove C++03
@@ -115,7 +132,7 @@ def get_builders():
         getLibcxxBuilder('libcxx-coverage',
             cmake_opts={
                 'LIBCXX_GENERATE_COVERAGE': 'ON',
-                'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/3.8.0/lib/linux/libclang_rt.profile-x86_64.a'},
+                'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/3.9.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=default_args(),
             generate_coverage='/shared/libcxx-coverage'),
         
@@ -133,7 +150,9 @@ def get_builders():
         getLibcxxBuilder('no-threads',
             cmake_opts={'LIBCXX_ENABLE_THREADS': 'OFF',
                         'LIBCXXABI_ENABLE_THREADS': 'OFF'},
-            lit_invocations=min_dialect_args())
+            lit_invocations=min_dialect_args()),
+
+        getLibcxxRangesBuilder('ranges-v3')
     ]
 
 """ Old builders
