@@ -116,7 +116,6 @@ def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
 def getLibcxxRangesBuilder(name, cc='clang', cxx='clang++'):
     env={'PATH': '/usr/local/bin:/usr/bin:/bin',
          'CC': cc, 'CXX': cxx}
-    del env['LIBCXX_USE_CCACHE']
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
