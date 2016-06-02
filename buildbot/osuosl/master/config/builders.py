@@ -121,7 +121,7 @@ def getLibcxxRangesBuilder(name, cc='clang', cxx='clang++'):
     'builder_type': 'nightly'}
 
 def get_builders():
-    gcc_dialect_args = dialect_args() 
+    gcc_dialect_args = list(dialect_args())
     del gcc_dialect_args[0] # Remove C++03
     return [
         getLibcxxBuilder('libcxx-coverage',
@@ -132,7 +132,7 @@ def get_builders():
             generate_coverage='/shared/libcxx-coverage'),
         
         getLibcxxBuilder('gcc-builder',
-            cc='/opt/gcc-5.3/bin/gcc', cxx='/opt/gcc-5.3/bin/g++',
+            cc='/opt/gcc-tot/bin/gcc', cxx='/opt/gcc-tot/bin/g++',
             lit_invocations=gcc_dialect_args),
         
         getLibcxxBuilder('static-libcxxabi-builder',
