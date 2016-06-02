@@ -122,7 +122,7 @@ def getLibcxxRangesV3Builder(f=None, env={}):
         haltOnFailure=True, workdir=ranges_build_path, env=env_cp))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
-              name='build.ranges', command=['make', 'VERBOSE=1', jobs_flag],
+              name='build.ranges', command=['make', jobs_flag],
               haltOnFailure=True, workdir=ranges_build_path))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='test.ranges', command=['make', jobs_flag, 'test'],
