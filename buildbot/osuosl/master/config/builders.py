@@ -96,9 +96,6 @@ def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
                      enable_libcxxabi=True, generate_coverage=None):
     env={'PATH': '/usr/local/bin:/usr/bin:/bin',
          'CC': cc, 'CXX': cxx}
-    # Disable CCACHE for coverage builds.
-    if generate_coverage:
-        del env['LIBCXX_USE_CCACHE']
     return {'name': name,
      'slavenames': ['my_buildslave'],
      'builddir' : name,
