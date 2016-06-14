@@ -14,9 +14,9 @@ def get_status_targets(standard_builders, standard_categories=None):
                       # options
                       gracefulShutdown   = False,
                       forceBuild         = True, # use this to test your slave once it is set up
-                      #forceAllBuilds     = False,
+                      forceAllBuilds     = False,
                       pingBuilder        = True,
-                      #stopBuild          = True,
+                      stopBuild          = True,
                       stopAllBuilds      = False,
                       cancelPendingBuild = True,
                       )
