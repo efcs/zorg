@@ -51,7 +51,7 @@ def getLibcxxWholeTree(f, src_root):
                   method='fresh',
                   submodules=True,
                   repourl='git@github.com:boostorg/boost.git',
-                  branch='develop',
+                  branch='master',
                   workdir=boost_path))
 
     return f
