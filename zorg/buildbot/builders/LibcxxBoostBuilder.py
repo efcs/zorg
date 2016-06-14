@@ -228,7 +228,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     # Configure Boost
     env = dict(env)
-    env += {'LD_LIBRARY_PATH': lib_path}
+    env['LD_LIBRARY_PATH'] = lib_path
     b2_path = boost_path = properties.WithProperties(
         '%(builddir)s/boost/b2')
     compile_args_str = 'cxxflags=-std=c++11 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument '
