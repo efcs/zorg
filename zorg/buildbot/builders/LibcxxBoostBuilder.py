@@ -71,6 +71,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
     boost_src_root = properties.WithProperties('%(builddir)s/boost')
+    boost_test_root = properties.WithProperties('%(builddir)s/boost/status')
     boost_build_path = properties.WithProperties('%(builddir)s/boost-build')
     f = getLibcxxWholeTree(f, src_root)
 
@@ -121,8 +122,12 @@ def getLibcxxBoostBuilder(f=None, env={}):
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
 
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.build', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
+        name='boost.b2.build', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
         haltOnFailure=True, workdir=boost_src_root, env=env))
+
+    f.addStep(buildbot.steps.shell.ShellCommand(
+        name='boost.b2.test', command=['./../b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
+        haltOnFailure=True, workdir=boost_test_root, env=env))
 
     return f
 """
