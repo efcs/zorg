@@ -53,6 +53,7 @@ def getLibcxxWholeTree(f, src_root):
                   mode='full',
                   method='fresh',
                   repourl='https://github.com/ericniebler/range-v3.git',
+                  defaultBranch='master',
                   workdir=ranges_path))
 
     return f
