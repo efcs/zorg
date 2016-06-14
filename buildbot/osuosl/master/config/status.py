@@ -1,7 +1,5 @@
 import os
 import buildbot
-import buildbot.status.mail
-import buildbot.status.words
 
 import config
 from zorg.buildbot.util.ConfigEmailLookup import ConfigEmailLookup
