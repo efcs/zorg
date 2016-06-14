@@ -16,7 +16,7 @@ def get_status_targets(standard_builders, standard_categories=None):
 
     from buildbot.status import html
     #import buildbot.plugins.status
-    from buildbot.plugins import util
+    from buildbot.plugins import util, status
     authz_cfg=util.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
@@ -32,5 +32,5 @@ def get_status_targets(standard_builders, standard_categories=None):
     default_email = config.options.get('Master Options', 'default_email')
 
     return [
-        buildbot.status.html.WebStatus(http_port = 8080, authz=authz_cfg),
+        status.WebStatus(http_port = 8080, authz=authz_cfg),
     ]
