@@ -47,8 +47,7 @@ def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
         lit_invocations=lit_invocations,
         enable_libcxxabi=enable_libcxxabi,
         generate_coverage=generate_coverage),
-    'category': 'libcxx',
-    'builder_type': 'nightly'}
+    'category': 'libcxx-nightly'}
 
 
 def getLibcxxRangesBuilder(name, cc='clang', cxx='clang++'):
@@ -59,8 +58,7 @@ def getLibcxxRangesBuilder(name, cc='clang', cxx='clang++'):
      'builddir' : name,
      'factory': LibcxxRangesV3Builder.getLibcxxRangesV3Builder(
         env=env),
-    'category': 'libcxx',
-    'builder_type': 'nightly'}
+    'category': 'libcxx-nightly'}
 
 def get_builders():
     gcc_dialect_args = list(dialect_args())
