@@ -274,6 +274,6 @@ def getLibcxxBoostBuilder(f=None, env={}):
         lib_regex = '%(builddir)s/boost/libs/' + lib + '/test'
         f.addStep(buildbot.steps.shell.ShellCommand(
             name='boost.b2.test.%s' % lib, command=b2_test_cmd,
-            haltOnFailure=True, workdir=properties.WithProperties(lib_regex), env=env))
+            haltOnFailure=False, workdir=properties.WithProperties(lib_regex), env=env))
 
     return f
