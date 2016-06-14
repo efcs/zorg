@@ -127,7 +127,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.b2.build', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
-        haltOnFailure=True, workdir=boost_src_root, env=env))
+        haltOnFailure=False, workdir=boost_src_root, env=env))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.b2.test', command=['./../b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
