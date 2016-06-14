@@ -116,7 +116,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
     libcxx_link_args = properties.WithProperties(
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.build', command=['./b2', 'toolset=clang', libcxx_compile_args, libcxx_link_args],
+        name='boost.build', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
         haltOnFailure=True, workdir=boost_src_root, env=env))
 
     return f
