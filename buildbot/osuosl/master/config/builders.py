@@ -13,13 +13,6 @@ from zorg.buildbot.builders import LibcxxABIChecker
 reload(LibcxxABIChecker)
 from zorg.buildbot.builders import LibcxxABIChecker
 
-from zorg.buildbot.builders import SphinxDocsBuilder
-reload(SphinxDocsBuilder)
-from zorg.buildbot.builders import SphinxDocsBuilder
-
-from zorg.buildbot.builders import ABITestsuitBuilder
-reload(ABITestsuitBuilder)
-from zorg.buildbot.builders import ABITestsuitBuilder
 
 def default_args(paths=[]):
     return [LitTestConfiguration(name = 'libcxx', paths=paths)]
