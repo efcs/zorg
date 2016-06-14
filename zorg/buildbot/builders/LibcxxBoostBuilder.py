@@ -109,28 +109,30 @@ def getLibcxxBoostBuilder(f=None, env={}):
         haltOnFailure=True, workdir=build_path))
 
     # Configure Boost
-
+    b2_path = boost_path = properties.WithProperties(
+        '%(builddir)s/boost/b2')
     libcxx_compile_args = properties.WithProperties(
         'cxxflags=-std=c++14 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument')
     libcxx_link_args = properties.WithProperties(
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
+    b2_cmd = [b2_path, jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args]
 
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.bootstrap', command=['./bootstrap.sh', '--with-toolset=clang'],
         haltOnFailure=True, workdir=boost_src_root, env=env))
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.b2.clean', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args, 'clean'],
+        name='boost.b2.clean', command=list(b2_cmd) + ['clean'],
         haltOnFailure=True, workdir=boost_src_root, env=env))
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.b2.headers', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args, 'headers'],
+        name='boost.b2.headers', command=list(b2_cmd) + ['headers'],
         haltOnFailure=True, workdir=boost_src_root, env=env))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.b2.build', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
+        name='boost.b2.build', command=b2_cmd,
         haltOnFailure=False, workdir=boost_src_root, env=env))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.b2.test', command=['./../b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
+        name='boost.b2.test', command=b2_cmd,
         haltOnFailure=True, workdir=boost_test_root, env=env))
 
     return f
