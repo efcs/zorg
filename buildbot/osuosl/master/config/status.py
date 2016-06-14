@@ -8,8 +8,8 @@ import config
 
 def get_status_targets(standard_builders, standard_categories=None):
 
-    from buildbot.status.web import auth, authz
-    authz_cfg=authz.Authz(
+    from buildbot.plugins import util
+    authz_cfg=util.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
                       gracefulShutdown   = False,
@@ -20,8 +20,6 @@ def get_status_targets(standard_builders, standard_categories=None):
                       stopAllBuilds      = False,
                       cancelPendingBuild = True,
                       )
-
-    default_email = config.options.get('Master Options', 'default_email')
 
     return [
         dict(port=8080,
