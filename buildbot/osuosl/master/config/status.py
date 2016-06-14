@@ -21,6 +21,7 @@ def get_status_targets(standard_builders, standard_categories=None):
                       # change any of these to True to enable; see the manual for more
                       # options
                       pingBuilder = True,
+                      forceBuild = True,
                       stopBuild          = True,
                       cancelPendingBuild = True
                       )
