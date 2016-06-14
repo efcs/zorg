@@ -15,9 +15,8 @@ from zorg.buildbot.util.InformativeMailNotifier import InformativeMailNotifier
 def get_status_targets(standard_builders, standard_categories=None):
 
     from buildbot.status import html
-    #import buildbot.plugins.status
-    from buildbot.plugins import util, status
-    authz_cfg=util.Authz(
+    from buildbot.status.web import auth, authz
+    authz_cfg=authz.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
                       gracefulShutdown   = False,
@@ -32,5 +31,5 @@ def get_status_targets(standard_builders, standard_categories=None):
     default_email = config.options.get('Master Options', 'default_email')
 
     return [
-        html.WebStatus(http_port = 8080, authz=authz_cfg),
+        buildbot.status.html.WebStatus(http_port = 8080, authz=authz_cfg),
     ]
