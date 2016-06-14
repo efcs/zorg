@@ -16,8 +16,8 @@ def get_status_targets(standard_builders, standard_categories=None):
 
     from buildbot.status import html
     from buildbot.status.web import auth, authz
-    import buildbot.plugins.util
-    authz_cfg=buildbot.plugins.util.Authz(
+    from buildbot.plugins import util
+    authz_cfg=util.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
                       pingBuilder = True,
