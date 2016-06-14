@@ -112,48 +112,50 @@ def getLibcxxBoostBuilder(f=None, env={}):
     # Configure Boost
     b2_path = boost_path = properties.WithProperties(
         '%(builddir)s/boost/b2')
-    libcxx_compile_args = properties.WithProperties(
-        'cxxflags=-std=c++11 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument -ftemplate-backtrace-limit=0')
+    compile_args_str = 'cxxflags=-std=c++11 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument '
+    build_args = ['-ftemplate-backtrace-limit=0']
+    test_args = ['-Wno-unused-local-typedef',
+                 '-Wno-unused-const-variable',
+                 '-Wno-#pragma-messages',
+                 '-Wno-unused-private-field',
+                 '-Wno-missing-braces',
+                 '-Wno-unused-variable',
+                 '-Wno-c99-extensions',
+                 '-Wno-variadic-macros',
+                 '-w']
+
+    build_compile_args = properties.WithProperties(
+        str(compile_args_str) + ' '.join(build_args))
+    test_compile_args = properties.WithProperties(
+        str(compile_args_str) + ' '.join(test_args))
     libcxx_link_args = properties.WithProperties(
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
-    b2_cmd = [b2_path, jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args]
+    b2_cmd = [b2_path, jobs_flag, 'toolset=clang', build_compile_args, libcxx_link_args]
+    b2_test_cmd = [b2_path, jobs_flag, 'toolset=clang', test_compile_args, libcxx_link_args]
 
+    # Bootstrap
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.bootstrap', command=['./bootstrap.sh', '--with-toolset=clang'],
         haltOnFailure=True, workdir=boost_src_root, env=env))
+
+    # Clean
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.b2.clean', command=list(b2_cmd) + ['clean'],
         haltOnFailure=True, workdir=boost_src_root, env=env))
+
+    # Generate headers
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.b2.headers', command=list(b2_cmd) + ['headers'],
         haltOnFailure=True, workdir=boost_src_root, env=env))
 
+    # Build the libraries
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.b2.build', command=b2_cmd,
         haltOnFailure=False, workdir=boost_src_root, env=env))
 
+    # Run the test suite
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.b2.test', command=b2_cmd,
+        name='boost.b2.test', command=b2_test_cmd,
         haltOnFailure=True, workdir=boost_test_root, env=env))
 
     return f
-"""
-    libcxx_compile_args = properties.WithProperties(
-        '-DCMAKE_CXX_FLAGS=-nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument')
-    libcxx_link_args = properties.WithProperties(
-        '-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
-    cmake_flags = [libcxx_compile_args]
-    env_cp = dict(env)
-    env_cp.update({'LDFLAGS': libcxx_link_args})
-    f.addStep(buildbot.steps.shell.ShellCommand(
-        name='cmake.boost', command=['cmake', libcxx_compile_args, boost_src_root],
-        haltOnFailure=True, workdir=boost_build_path, env=env_cp))
-
-    f.addStep(buildbot.steps.shell.ShellCommand(
-              name='build.boost', command=['make', jobs_flag],
-              haltOnFailure=True, workdir=boost_build_path))
-    f.addStep(buildbot.steps.shell.ShellCommand(
-              name='test.boost', command=['make', jobs_flag, 'test'],
-              haltOnFailure=True, workdir=boost_build_path))
-"""
-
