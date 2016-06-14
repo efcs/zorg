@@ -1,6 +1,6 @@
 import os
 import buildbot.process.factory
-from buildbot.steps.source import SVN
+from buildbot.steps.source.svn import SVN
 from buildbot.steps.shell import ShellCommand
 from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
