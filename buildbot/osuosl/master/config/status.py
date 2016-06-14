@@ -32,5 +32,5 @@ def get_status_targets(standard_builders, standard_categories=None):
     default_email = config.options.get('Master Options', 'default_email')
 
     return [
-        status.WebStatus(http_port = 8080, authz=authz_cfg),
+        html.WebStatus(http_port = 8080, authz=authz_cfg),
     ]
