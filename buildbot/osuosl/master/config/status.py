@@ -2,9 +2,6 @@ import os
 import buildbot
 
 import config
-from zorg.buildbot.util.ConfigEmailLookup import ConfigEmailLookup
-from zorg.buildbot.util.InformativeMailNotifier import InformativeMailNotifier
-
 # Returns a list of Status Targets. The results of each build will be
 # pushed to these targets. buildbot/status/*.py has a variety to choose from,
 # including web pages, email senders, and IRC bots.
