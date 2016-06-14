@@ -31,5 +31,6 @@ def get_status_targets(standard_builders, standard_categories=None):
     default_email = config.options.get('Master Options', 'default_email')
 
     return [
-        buildbot.status.html.WebStatus(http_port = 8080, authz=authz_cfg),
+        dict(port=8080,
+             plugins=dict(waterfall_view={}, console_view={}), authz=authz_cfg),
     ]
