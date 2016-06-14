@@ -9,6 +9,10 @@ from zorg.buildbot.builders import LibcxxRangesV3Builder
 reload(LibcxxRangesV3Builder)
 from zorg.buildbot.builders import LibcxxRangesV3Builder
 
+from zorg.buildbot.builders import LibcxxBoostBuilder
+reload(LibcxxBoostBuilder)
+from zorg.buildbot.builders import LibcxxBoostBuilder
+
 from zorg.buildbot.builders import LibcxxABIChecker
 reload(LibcxxABIChecker)
 from zorg.buildbot.builders import LibcxxABIChecker
@@ -60,6 +64,17 @@ def getLibcxxRangesBuilder(name, cc='clang', cxx='clang++'):
         env=env),
     'category': 'libcxx-nightly'}
 
+
+def getLibcxxBoostBuilder(name, cc='clang', cxx='clang++'):
+    env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+         'CC': cc, 'CXX': cxx}
+    return {'name': name,
+     'slavenames': ['my_buildslave'],
+     'builddir' : name,
+     'factory': LibcxxBoostBuilder.getLibcxxBoostBuilder(
+        env=env),
+    'category': 'libcxx-nightly'}
+
 def get_builders():
     gcc_dialect_args = list(dialect_args())
     del gcc_dialect_args[0] # Remove C++03
@@ -87,7 +102,8 @@ def get_builders():
                         'LIBCXXABI_ENABLE_THREADS': 'OFF'},
             lit_invocations=min_dialect_args()),
 
-        getLibcxxRangesBuilder('ranges-v3')
+        getLibcxxRangesBuilder('ranges-v3'),
+        getLibcxxBoostBuilder('boost')
     ]
 
 """ Old builders
