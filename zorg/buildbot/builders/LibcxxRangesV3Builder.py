@@ -51,9 +51,10 @@ def getLibcxxWholeTree(f, src_root):
                   workdir=libcxxabi_path))
     f.addStep(Git(name='git-rangesv3',
                   mode='full',
-                  method='fresh',
+                  method='clobber',
                   repourl='https://github.com/ericniebler/range-v3.git',
                   branch='master',
+                  shallow=True,
                   workdir=ranges_path))
 
     return f
