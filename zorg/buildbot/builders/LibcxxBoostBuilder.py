@@ -187,6 +187,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
+    lib_path = properties.WithProperties('%(builddir)s/build/lib/')
     boost_src_root = properties.WithProperties('%(builddir)s/boost')
     boost_test_root = properties.WithProperties('%(builddir)s/boost/status')
     boost_build_path = properties.WithProperties('%(builddir)s/boost-build')
@@ -206,7 +207,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
         name='make.boost.builddir', command=['mkdir', boost_build_path],
         haltOnFailure=True, workdir=src_root))
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='cmake', command=['cmake', src_root],
+        name='cmake', command=['cmake', '-DCMAKE_BUILD_TYPE=RELWITHDEBINFO', src_root],
         haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxxabi
@@ -226,6 +227,8 @@ def getLibcxxBoostBuilder(f=None, env={}):
         haltOnFailure=True, workdir=build_path))
 
     # Configure Boost
+    env = dict(env)
+    env += {'LD_LIBRARY_PATH': lib_path}
     b2_path = boost_path = properties.WithProperties(
         '%(builddir)s/boost/b2')
     compile_args_str = 'cxxflags=-std=c++11 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument '
