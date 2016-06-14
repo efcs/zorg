@@ -109,12 +109,17 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     # Configure Boost
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='boost.bootstrap', command=['./bootstrap.sh'],
-        haltOnFailure=True, workdir=boost_src_root))
+        name='boost.bootstrap', command=['./bootstrap.sh', '--with-toolset=clang'],
+        haltOnFailure=True, workdir=boost_src_root, env=env))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+        name='boost.b2.clean', command=['./b2', 'clean'],
+        haltOnFailure=True, workdir=boost_src_root, env=env))
+
     libcxx_compile_args = properties.WithProperties(
         'cxxflags=-std=c++1z -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument')
     libcxx_link_args = properties.WithProperties(
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
+
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='boost.build', command=['./b2', jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args],
         haltOnFailure=True, workdir=boost_src_root, env=env))
