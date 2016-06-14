@@ -20,9 +20,7 @@ def get_status_targets(standard_builders, standard_categories=None):
     authz_cfg=util.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
-                      auth=True,
                       pingBuilder = True,
-                      forceBuild         = True, # use this to test your slave once it is set up
                       stopBuild          = True,
                       cancelPendingBuild = True
                       )
