@@ -8,9 +8,9 @@ import config
 
 def get_status_targets(standard_builders, standard_categories=None):
 
-    from buildbot.plugins import util
+    from buildbot.status.web import auth, authz
     import buildbot.status.html
-    authz_cfg=util.Authz(
+    authz_cfg=authz.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
                       gracefulShutdown   = False,
