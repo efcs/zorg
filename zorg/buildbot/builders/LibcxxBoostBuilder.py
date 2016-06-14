@@ -112,7 +112,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
     b2_path = boost_path = properties.WithProperties(
         '%(builddir)s/boost/b2')
     libcxx_compile_args = properties.WithProperties(
-        'cxxflags=-std=c++14 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument')
+        'cxxflags=-std=c++14 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument -ftemplate-backtrace-limit=0')
     libcxx_link_args = properties.WithProperties(
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
     b2_cmd = [b2_path, jobs_flag, 'toolset=clang', libcxx_compile_args, libcxx_link_args]
