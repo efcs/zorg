@@ -16,10 +16,11 @@ def get_status_targets(standard_builders, standard_categories=None):
 
     from buildbot.status import html
     from buildbot.status.web import auth, authz
-    from buildbot.plugins import util, status
+    from buildbot.plugins import util
     authz_cfg=util.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
+                      auth=True,
                       pingBuilder = True,
                       forceBuild         = True, # use this to test your slave once it is set up
                       stopBuild          = True,
@@ -30,5 +31,4 @@ def get_status_targets(standard_builders, standard_categories=None):
 
     return [
         buildbot.status.html.WebStatus(http_port=8080, authz=authz_cfg),
-        status.WebStatus(http_port=8080, authz=authz_cfg),
     ]
