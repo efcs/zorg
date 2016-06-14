@@ -8,7 +8,8 @@ import config
 
 def get_status_targets(standard_builders, standard_categories=None):
 
-    from buildbot.plugins import util, status
+    from buildbot.plugins import util
+    import buildbot.status.html
     authz_cfg=util.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
@@ -22,6 +23,6 @@ def get_status_targets(standard_builders, standard_categories=None):
                       )
 
     return [
-         status.WebStatus(http_port = 8080, authz=authz_cfg),
+         buildbot.status.html.WebStatus(http_port = 8080, authz=authz_cfg),
 
     ]
