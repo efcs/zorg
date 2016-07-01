@@ -64,7 +64,7 @@ def get_libs_with_tests():
             ("conversion", False),
             ("bimap", False),
             ("container", False),
-            ("dll", False),
+            ("dll", True),
             ("wave", True),
             ("pool", True),
             ("type_traits", False),
