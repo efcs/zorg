@@ -12,6 +12,7 @@ from buildbot.steps.source.git import Git
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.util.phasedbuilderutils as phased_builder_utils
+from buildbot.status.builder import SUCCESS, WARNINGS, FAILURE
 
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
@@ -273,12 +274,15 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     # Run the test suite
     for lib, expect_fail in get_libs_with_tests():
+        decode_rc = {0:SUCCESS}
+        if expect_fail:
+            decode_rc = {0:FAILURE, 1:WARNINGS}
         expect_pass = not expect_fail
         lib_regex = '%(builddir)s/boost/libs/' + lib + '/test'
         f.addStep(buildbot.steps.shell.ShellCommand(
             name='boost.b2.test.%s' % lib, command=b2_test_cmd,
             haltOnFailure=False, warnOnFailure=expect_fail,
-            flunkOnFailure=expect_pass,
+            flunkOnFailure=expect_pass, decodeRC=decode_rc,
             workdir=properties.WithProperties(lib_regex), env=env))
 
     return f
