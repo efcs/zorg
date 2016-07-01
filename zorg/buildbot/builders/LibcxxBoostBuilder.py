@@ -273,10 +273,12 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     # Run the test suite
     for lib, expect_fail in get_libs_with_tests():
+        expect_pass = not expect_fail
         lib_regex = '%(builddir)s/boost/libs/' + lib + '/test'
         f.addStep(buildbot.steps.shell.ShellCommand(
             name='boost.b2.test.%s' % lib, command=b2_test_cmd,
             haltOnFailure=False, warnOnFailure=expect_fail,
+            flunkOnFailure=expect_pass,
             workdir=properties.WithProperties(lib_regex), env=env))
 
     return f
