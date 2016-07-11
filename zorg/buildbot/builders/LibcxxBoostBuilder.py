@@ -149,7 +149,7 @@ def get_libs_with_tests():
             ("move", False),
             ("winapi", False),
             ("thread", False),
-            ("hana", False),
+            ("hana", True),
             ("optional", False),
             ("config", False),
             ("log", False),
