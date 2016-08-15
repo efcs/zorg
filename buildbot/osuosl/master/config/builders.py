@@ -81,6 +81,7 @@ def get_builders():
     return [
         getLibcxxBuilder('libcxx-coverage',
             cmake_opts={
+                'CMAKE_BUILD_TYPE': 'COVERAGE',
                 'LIBCXX_GENERATE_COVERAGE': 'ON',
                 'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/3.9.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=default_args(),
