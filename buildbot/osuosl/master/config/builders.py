@@ -90,17 +90,12 @@ def get_builders():
         getLibcxxBuilder('gcc-builder',
             cc='/opt/gcc-tot/bin/gcc', cxx='/opt/gcc-tot/bin/g++',
             lit_invocations=gcc_dialect_args),
-        
+
         getLibcxxBuilder('static-libcxxabi-builder',
             cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY': 'ON', 'LIBCXXABI_ENABLE_SHARED': 'OFF'}),
-        
+
         getLibcxxBuilder('abi-unstable',
             cmake_opts={'LIBCXX_ABI_UNSTABLE': 'ON'},
-            lit_invocations=min_dialect_args()),
-        
-        getLibcxxBuilder('no-threads',
-            cmake_opts={'LIBCXX_ENABLE_THREADS': 'OFF',
-                        'LIBCXXABI_ENABLE_THREADS': 'OFF'},
             lit_invocations=min_dialect_args()),
 
         getLibcxxRangesBuilder('ranges-v3'),
