@@ -31,7 +31,6 @@ def getLibcxxWholeTree(f, src_root):
 
     mode = 'full'
     method = 'fresh'
-    f = phased_builder_utils.SVNCleanupStep(f, llvm_path)
     f.addStep(Git(name='git-llvm',
                   mode=mode,
                   method=method,
