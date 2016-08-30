@@ -35,6 +35,7 @@ def getLibcxxWholeTree(f, src_root):
                   mode=mode,
                   method=method,
                   progress=True,
+                  shallow=True,
                   repourl='http://llvm.org/git/llvm.git',
                   workdir=llvm_path))
     f.addStep(Git(name='git-libcxx',
@@ -115,7 +116,7 @@ def get_libs_with_tests():
             ("mpi", False),
             ("signals", False),
             ("uuid", True),
-            ("exception", True),
+            ("exception", False),
             ("gil", True),
             ("utility", True),
             ("accumulators", True),
@@ -151,7 +152,7 @@ def get_libs_with_tests():
             ("move", False),
             ("winapi", False),
             ("thread", False),
-            ("hana", True),
+            ("hana", False),
             ("optional", False),
             ("config", False),
             ("log", False),
@@ -189,10 +190,15 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
-    lib_path = properties.WithProperties('%(builddir)s/build/lib/')
     boost_src_root = properties.WithProperties('%(builddir)s/boost')
     boost_test_root = properties.WithProperties('%(builddir)s/boost/status')
     boost_build_path = properties.WithProperties('%(builddir)s/boost-build')
+    boost_include_path = properties.WithProperties(
+        '%(builddir)s/boost/boost'
+    )
+    boost_lib_path = properties.WithProperties(
+        '%(builddir)s/boost/boost/stage/lib'
+    )
     f = getLibcxxWholeTree(f, src_root)
 
     # Nuke/remake build directory and run CMake
@@ -230,20 +236,22 @@ def getLibcxxBoostBuilder(f=None, env={}):
 
     # Configure Boost
     env = dict(env)
-    env['LD_LIBRARY_PATH'] = lib_path
+    env['LD_LIBRARY_PATH'] = boost_lib_path
+    env['LIBRARY_PATH'] = boost_lib_path
     b2_path = boost_path = properties.WithProperties(
         '%(builddir)s/boost/b2')
     compile_args_str = 'cxxflags=-std=c++14 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument '
     build_args = ['-ftemplate-backtrace-limit=0']
-    test_args = ['-Wno-unused-local-typedef',
-                 '-Wno-unused-const-variable',
-                 '-Wno-#pragma-messages',
-                 '-Wno-unused-private-field',
-                 '-Wno-missing-braces',
-                 '-Wno-unused-variable',
-                 '-Wno-c99-extensions',
-                 '-Wno-variadic-macros',
-                 '-w']
+    test_args = ['-I%(builddir)s/boost/']
+    test_args += ['-Wno-unused-local-typedef',
+                  '-Wno-unused-const-variable',
+                  '-Wno-#pragma-messages',
+                  '-Wno-unused-private-field',
+                  '-Wno-missing-braces',
+                  '-Wno-unused-variable',
+                  '-Wno-c99-extensions',
+                  '-Wno-variadic-macros',
+                  '-w']
 
     build_compile_args = properties.WithProperties(
         str(compile_args_str) + ' '.join(build_args))
