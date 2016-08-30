@@ -35,7 +35,6 @@ def getLibcxxWholeTree(f, src_root):
                   mode=mode,
                   method=method,
                   progress=True,
-                  shallow=True,
                   repourl='http://llvm.org/git/llvm.git',
                   workdir=llvm_path))
     f.addStep(Git(name='git-libcxx',
