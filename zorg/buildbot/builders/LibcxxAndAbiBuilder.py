@@ -148,8 +148,8 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
         f.addStep(addTestSuite(inv, env=env))
         
     if generate_coverage:
-        coverage_path = properties.WithProperties(
-            '%(builddir)s/build/projects/libcxx/test/coverage/test_coverage/')
+        coverage_path_glob = properties.WithProperties(
+            '%(builddir)s/build/projects/libcxx/test/coverage/test_coverage/*')
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'generate.coverage',
             command         = ['make', jobs_flag, 'generate-libcxx-coverage'],
@@ -159,13 +159,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
 
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'copy.coverage',
-            command         = ['cp', '-R', coverage_path, generate_coverage],
-            workdir         = build_path,
-            haltOnFailure   = True))
-        
-        f.addStep(buildbot.steps.shell.ShellCommand(
-            name            = 'mark.coverage.new',
-            command         = ['touch', '%s/new.lock' % generate_coverage],
+            command         = ['cp', '-R', '-t', generate_coverage, coverage_path_glob],
             workdir         = build_path,
             haltOnFailure   = True))
 
