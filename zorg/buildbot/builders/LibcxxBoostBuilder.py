@@ -127,7 +127,7 @@ def get_libs_with_tests():
             ("parameter", False),
             ("filesystem", False),
             ("ptr_container", True),
-            ("geometry", False),
+            ("geometry", True),
             ("preprocessor", False),
             ("function", False),
             ("vmd", True),
