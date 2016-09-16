@@ -6,6 +6,7 @@ import buildbot.steps.shell
 import buildbot.process.properties as properties
 
 from buildbot.steps.source.svn import SVN
+from buildbot.steps.source.git import Git
 
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.util.artifacts as artifacts
@@ -31,26 +32,29 @@ def getLibcxxWholeTree(f, src_root):
         '%(builddir)s/llvm/projects/libcxx')
     libcxxabi_path = properties.WithProperties(
         '%(builddir)s/llvm/projects/libcxxabi')
+    boost_path = properties.WithProperties(
+        '%(builddir)s/boost')
 
     mode = 'full'
-    method = 'clean'
-    f = phased_builder_utils.SVNCleanupStep(f, llvm_path)
-    f.addStep(SVN(name='svn-llvm',
+    method = 'fresh'
+    f.addStep(Git(name='git-llvm',
                   mode=mode,
                   method=method,
-                  repourl='http://llvm.org/svn/llvm-project/llvm/trunk',
+                  progress=True,
+                  repourl='http://llvm.org/git/llvm.git',
                   workdir=llvm_path))
-    f.addStep(SVN(name='svn-libcxx',
+    f.addStep(Git(name='git-libcxx',
                   mode=mode,
                   method=method,
-                  repourl='http://llvm.org/svn/llvm-project/libcxx/trunk',
+                  progress=True,
+                  repourl='http://llvm.org/git/libcxx.git',
                   workdir=libcxx_path))
-    f.addStep(SVN(name='svn-libcxxabi',
+    f.addStep(Git(name='git-libcxxabi',
                   mode=mode,
                   method=method,
-                  repourl='http://llvm.org/svn/llvm-project/libcxxabi/trunk',
+                  progress=True,
+                  repourl='http://llvm.org/git/libcxxabi.git',
                   workdir=libcxxabi_path))
-
     return f
 
 def addTestSuite(litDesc, env={}):
