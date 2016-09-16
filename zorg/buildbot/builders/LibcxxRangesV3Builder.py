@@ -29,22 +29,24 @@ def getLibcxxWholeTree(f, src_root):
         '%(builddir)s/ranges')
 
     mode = 'full'
-    method = 'clean'
-    f = phased_builder_utils.SVNCleanupStep(f, llvm_path)
-    f.addStep(SVN(name='svn-llvm',
+    method = 'fresh'
+    f.addStep(Git(name='git-llvm',
                   mode=mode,
                   method=method,
-                  repourl='http://llvm.org/svn/llvm-project/llvm/trunk',
+                  progress=True,
+                  repourl='http://llvm.org/git/llvm.git',
                   workdir=llvm_path))
-    f.addStep(SVN(name='svn-libcxx',
+    f.addStep(Git(name='git-libcxx',
                   mode=mode,
                   method=method,
-                  repourl='http://llvm.org/svn/llvm-project/libcxx/trunk',
+                  progress=True,
+                  repourl='http://llvm.org/git/libcxx.git',
                   workdir=libcxx_path))
-    f.addStep(SVN(name='svn-libcxxabi',
+    f.addStep(Git(name='git-libcxxabi',
                   mode=mode,
                   method=method,
-                  repourl='http://llvm.org/svn/llvm-project/libcxxabi/trunk',
+                  progress=True,
+                  repourl='http://llvm.org/git/libcxxabi.git',
                   workdir=libcxxabi_path))
     f.addStep(Git(name='git-rangesv3',
                   mode='full',
