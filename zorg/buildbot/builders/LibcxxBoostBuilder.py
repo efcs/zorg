@@ -68,7 +68,7 @@ def get_libs_with_tests():
             ("container", False),
             ("dll", True),
             ("wave", True),
-            ("pool", True),
+            ("pool", False),
             ("type_traits", False),
             ("foreach", False),
             ("proto", True),
