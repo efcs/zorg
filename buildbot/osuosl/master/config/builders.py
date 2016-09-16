@@ -86,17 +86,6 @@ def get_builders():
                 'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/4.0.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=default_args(),
             generate_coverage='/shared/libcxx-coverage'),
-        
-        getLibcxxBuilder('gcc-builder',
-            cc='/opt/gcc-tot/bin/gcc', cxx='/opt/gcc-tot/bin/g++',
-            lit_invocations=gcc_dialect_args),
-
-        getLibcxxBuilder('static-libcxxabi-builder',
-            cmake_opts={'LIBCXX_ENABLE_STATIC_ABI_LIBRARY': 'ON', 'LIBCXXABI_ENABLE_SHARED': 'OFF'}),
-
-        getLibcxxBuilder('abi-unstable',
-            cmake_opts={'LIBCXX_ABI_UNSTABLE': 'ON'},
-            lit_invocations=min_dialect_args()),
 
         getLibcxxRangesBuilder('ranges-v3'),
         getLibcxxBoostBuilder('boost')
