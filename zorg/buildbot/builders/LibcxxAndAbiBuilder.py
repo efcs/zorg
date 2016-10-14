@@ -64,7 +64,7 @@ def addTestSuite(litDesc, env={}):
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
     litCmd = ['%(builddir)s/llvm/utils/lit/lit.py',
-              '-sv', '--show-unsupported', '--show-xfail', '--threads=%(jobs)s',
+              '-sv', '--show-unsupported', '--show-xfail',  '--threads=12', # FIXME '--threads=%(jobs)s',
               '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/test/lit.site.cfg']
 
     for key in litDesc.opts:
