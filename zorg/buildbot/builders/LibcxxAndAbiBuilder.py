@@ -159,7 +159,19 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
 
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'copy.coverage',
-            command         = ['cp', '-R', '-t', generate_coverage, coverage_path_glob],
+            command         = ['rm', '-R', '-t', generate_coverage, coverage_path],
+            workdir         = build_path,
+            haltOnFailure   = True))
+
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name            = 'remove.old.coverage',
+            command         = ['mv', generate_coverage, '/tmp/libcxx-coverage-old'],
+            workdir         = build_path,
+            haltOnFailure   = True))
+
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name            = 'copy.coverage',
+            command         = ['cp', '-R', '-t', generate_coverage, coverage_path],
             workdir         = build_path,
             haltOnFailure   = True))
 
