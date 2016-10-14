@@ -161,7 +161,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
             name            = 'remove.old.coverage',
             command         = ['mv', generate_coverage, '/tmp/libcxx-coverage-old'],
             workdir         = build_path,
-            haltOnFailure   = True))
+            haltOnFailure   = False))
 
 
         f.addStep(buildbot.steps.shell.ShellCommand(
