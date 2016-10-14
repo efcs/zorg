@@ -126,7 +126,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
 
     # Build libcxx
     f.addStep(buildbot.steps.shell.ShellCommand(
-              name='build.libcxx', command=['make', 'VERBOSE=1', jobs_flag, 'cxx'],
+              name='build.libcxx', command=['make', jobs_flag, 'cxx'],
               haltOnFailure=True, workdir=build_path))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
