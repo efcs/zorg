@@ -156,7 +156,7 @@ def get_libs_with_tests():
             ("signals2", False),
             ("lexical_cast", True),
             ("array", False),
-            ("lockfree", False),
+            ("lockfree", True),
             ("python", False),
             ("local_function", True),
             ("compute", False),
@@ -170,9 +170,9 @@ def get_libs_with_tests():
             ("thread", False),
             ("hana", False),
             ("spirit", True),
-            ("serialization", False),
+            ("serialization", True),
             ("geometry", True),
-            ("multiprecision", True),
+            ("multiprecision", False),
             ("math", False)]
 
 def getLibcxxBoostBuilder(f=None, env={}):
