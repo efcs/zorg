@@ -59,7 +59,7 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 def addTestSuite(litDesc, env={}):
-    libcxxTestRoot = properties.WithProperties('%(builddir)s/llvm/projects/libcxx/test/libcxx')
+    libcxxTestRoot = properties.WithProperties('%(builddir)s/llvm/projects/libcxx/test')
     litExecutable = properties.WithProperties('%(builddir)s/llvm/utils/lit/lit.py')
 
     # Specify the max number of threads using properties so LIT doesn't use
@@ -97,7 +97,6 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
         description="set build dir",
         workdir="."))
 
-    build_num = util.Property('buildnumber')
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
 
@@ -159,7 +158,8 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
             workdir         = build_path,
             haltOnFailure   = True))
 
-        new_path = os.path.join(generate_coverage, 'libcxx-coverage-%s' % build_num)
+        new_dir = properties.WithProperties("libcxx-coverage-%(buildnumber)s")
+        new_path = os.path.join(generate_coverage, new_dir)
         sym_path = os.path.join(generate_coverage, 'current')
 
         f.addStep(buildbot.steps.shell.ShellCommand(
