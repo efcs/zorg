@@ -158,7 +158,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
             workdir         = build_path,
             haltOnFailure   = True))
 
-        new_dir = properties.WithProperties("libcxx-coverage-%(buildnumber)s")
+        new_dir = util.Interpolate("libcxx-coverage-%(buildnumber)s")
         new_path = os.path.join(generate_coverage, new_dir)
         sym_path = os.path.join(generate_coverage, 'current')
 
