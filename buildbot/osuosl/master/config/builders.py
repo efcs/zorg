@@ -22,21 +22,6 @@ def default_args(paths=[]):
     p = list(paths)
     return [LitTestConfiguration(name = 'libcxx', paths=p)]
 
-def dialect_args(paths=[]):
-    return [
-        LitTestConfiguration(name='libcxx-cxx03', opts={'std': 'c++03'}, paths=paths),
-        LitTestConfiguration(name='libcxx-cxx11', opts={'std': 'c++11'}, paths=paths),
-        LitTestConfiguration(name='libcxx-cxx14', opts={'std': 'c++14'}, paths=paths),
-        LitTestConfiguration(name='libcxx-cxx1z', opts={'std': 'c++1z'}, paths=paths)
-    ]
-
-def min_dialect_args(paths=[]):
-    return [
-        LitTestConfiguration(name='libcxx-cxx03', opts={'std': 'c++03'}, paths=paths),
-        LitTestConfiguration(name='libcxx-default', paths=paths)
-    ]
-
-tsan_args = []
 
 def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
                      lit_invocations=default_args(),
@@ -77,8 +62,6 @@ def getLibcxxBoostBuilder(name, cc='clang', cxx='clang++'):
     'category': 'libcxx-nightly'}
 
 def get_builders():
-    gcc_dialect_args = list(dialect_args())
-    del gcc_dialect_args[0] # Remove C++03
     return [
         getLibcxxBuilder('libcxx-coverage',
             cmake_opts={
@@ -86,30 +69,9 @@ def get_builders():
                 'LIBCXX_GENERATE_COVERAGE': 'ON',
                 'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/6.0.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=default_args(),
-            generate_coverage='/opt/libcxx-coverage'),
+            generate_coverage='/opt/libcxx-coverage/'),
 
         getLibcxxRangesBuilder('ranges-v3'),
         getLibcxxBoostBuilder('boost')
     ]
 
-""" Old builders
-{'name': 'abi-checker-release',
- 'slavenames': ['my_buildslave'],
- 'builddir' : 'abi-checker-release',
- 'factory': LibcxxABIChecker.getLibcxxABIChecker(
-    env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-         'CC': 'clang', 'CXX': 'clang++'},
-    cmake_extra_opts={'CMAKE_BUILD_TYPE': 'RELWITHDEBINFO'}),
-'category': 'libcxx',
-'builder_type': 'commit'},
-
-{'name': 'abi-checker-debug',
- 'slavenames': ['my_buildslave'],
- 'builddir' : 'abi-checker-debug',
- 'factory': LibcxxABIChecker.getLibcxxABIChecker(
-    env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-         'CC': 'clang', 'CXX': 'clang++'},
-    cmake_extra_opts={'CMAKE_BUILD_TYPE': 'DEBUG'}),
-'category': 'libcxx',
-'builder_type': 'commit'},
-"""

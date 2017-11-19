@@ -4,6 +4,7 @@ import buildbot
 import buildbot.process.factory
 import buildbot.steps.shell
 import buildbot.process.properties as properties
+from buildbot.plugins import util
 
 from buildbot.steps.source.svn import SVN
 from buildbot.steps.source.git import Git
@@ -64,7 +65,7 @@ def addTestSuite(litDesc, env={}):
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
     litCmd = ['%(builddir)s/llvm/utils/lit/lit.py',
-              '-sv', '--show-unsupported', '--show-xfail',  '--threads=12', # FIXME '--threads=%(jobs)s',
+              '-sv', '--show-unsupported', '--show-xfail',  '--threads=24', # FIXME '--threads=%(jobs)s',
               '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/test/lit.site.cfg']
 
     for key in litDesc.opts:
@@ -96,6 +97,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
         description="set build dir",
         workdir="."))
 
+    build_num = util.Property('buildnumber')
     src_root = properties.WithProperties('%(builddir)s/llvm')
     build_path = properties.WithProperties('%(builddir)s/build')
 
@@ -157,16 +159,24 @@ def getLibcxxAndAbiBuilder(f=None, env={}, cmake_extra_opts={}, lit_invocations=
             workdir         = build_path,
             haltOnFailure   = True))
 
+        new_path = os.path.join(generate_coverage, 'libcxx-coverage-%s' % build_num)
+        sym_path = os.path.join(generate_coverage, 'current')
+
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'remove.old.coverage',
-            command         = ['mv', generate_coverage, '/tmp/libcxx-coverage-old'],
+            command         = ['rm', '-f', sym_path],
             workdir         = build_path,
             haltOnFailure   = False))
 
-
         f.addStep(buildbot.steps.shell.ShellCommand(
             name            = 'move.new.coverage',
-            command         = ['mv', coverage_path, generate_coverage],
+            command         = ['mv', coverage_path, new_path],
+            workdir         = build_path,
+            haltOnFailure   = True))
+
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name            = 'link.new.coverage',
+            command         = ['ln', '-s', new_path, sym_path],
             workdir         = build_path,
             haltOnFailure   = True))
 
