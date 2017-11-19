@@ -314,7 +314,6 @@ def getLibcxxBoostBuilder(f=None, env={}):
         lib_regex = '%(builddir)s/boost/libs/' + lib + '/test'
         if lib == 'wave':
             lib_regex += '/build'
-        elif lib == 'numeric':
         f.addStep(buildbot.steps.shell.ShellCommand(
             name='boost.b2.test.%s' % lib, command=b2_test_cmd,
             haltOnFailure=False, warnOnFailure=expect_fail,
