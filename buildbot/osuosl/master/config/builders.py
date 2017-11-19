@@ -22,6 +22,8 @@ def default_args(paths=[], opts=None):
     p = list(paths)
     if opts is not None:
         opts = dict(opts)
+    else:
+        opts = {}
     return [LitTestConfiguration(name = 'libcxx', paths=p, opts=opts)]
 
 
