@@ -138,7 +138,7 @@ def get_libs_with_tests():
             ("heap", False),
             ("detail", False),
             ("metaparse", False),
-            ("function_types", True),
+            ("function_types", False),
             ("type_erasure", False),
             ("tti", False),
             ("lambda", False),
