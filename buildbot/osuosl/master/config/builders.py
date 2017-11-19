@@ -76,7 +76,7 @@ def get_builders():
             generate_coverage='/opt/libcxx-coverage/'),
         getLibcxxBuilder('libcxx-modules',
                          lit_invocations=default_args(opts={
-                            'enable_modules': True
+                            'enable_modules': 'true'
                          })),
         getLibcxxRangesBuilder('ranges-v3'),
         getLibcxxBoostBuilder('boost')
