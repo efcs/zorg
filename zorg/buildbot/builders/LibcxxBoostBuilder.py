@@ -61,13 +61,28 @@ def getLibcxxWholeTree(f, src_root):
 
 def get_libs_with_tests():
     return [
+            # New Libs
+            ("beast", False),
+            ("process", False),
+            ("mp11", False),
+            ("disjoint_sets", False),
+            ("callable_traits", False),
+            ("concept_check", False),
+            ("dynamic_bitset", False),
+            ("poly_collection", False),
+            ("numeric", False),
+            ("flyweightconversion", False),
+            ("stacktrace", False),
+            ("fiber", False),
+            ("date_time", False),
+            # Old Libs
             ("smart_ptr", True),
             ("flyweight", False),
             ("conversion", False),
             ("bimap", False),
             ("container", False),
             ("dll", False),
-            ("wave", True),
+            ("wave", False),
             ("pool", False),
             ("type_traits", False),
             ("foreach", False),
@@ -296,6 +311,8 @@ def getLibcxxBoostBuilder(f=None, env={}):
             decode_rc = {0:FAILURE, 1:WARNINGS}
         expect_pass = not expect_fail
         lib_regex = '%(builddir)s/boost/libs/' + lib + '/test'
+        if lib == 'wave':
+            lib_regex += '/build'
         f.addStep(buildbot.steps.shell.ShellCommand(
             name='boost.b2.test.%s' % lib, command=b2_test_cmd,
             haltOnFailure=False, warnOnFailure=expect_fail,
