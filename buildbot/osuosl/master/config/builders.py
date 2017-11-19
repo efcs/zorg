@@ -76,10 +76,10 @@ def get_builders():
                             'enable_modules': 'true'
                          }),
             generate_coverage='/opt/libcxx-coverage/'),
-        getLibcxxBuilder('libcxx-modules',
-                         lit_invocations=default_args(opts={
-                            'enable_modules': 'true'
-                         })),
+        #getLibcxxBuilder('libcxx-modules',
+        #                 lit_invocations=default_args(opts={
+        #                    'enable_modules': 'true'
+        #                 })),
         getLibcxxRangesBuilder('ranges-v3'),
         getLibcxxBoostBuilder('boost')
     ]
