@@ -72,7 +72,9 @@ def get_builders():
                 'CMAKE_BUILD_TYPE': 'DEBUG',
                 'LIBCXX_GENERATE_COVERAGE': 'ON',
                 'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/6.0.0/lib/linux/libclang_rt.profile-x86_64.a'},
-            lit_invocations=default_args(),
+            lit_invocations=default_args(opts={
+                            'enable_modules': 'true'
+                         }),
             generate_coverage='/opt/libcxx-coverage/'),
         getLibcxxBuilder('libcxx-modules',
                          lit_invocations=default_args(opts={
