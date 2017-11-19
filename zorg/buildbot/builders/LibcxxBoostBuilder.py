@@ -66,7 +66,7 @@ def get_libs_with_tests():
             ("conversion", False),
             ("bimap", False),
             ("container", False),
-            ("dll", True),
+            ("dll", False),
             ("wave", True),
             ("pool", False),
             ("type_traits", False),
@@ -261,8 +261,8 @@ def getLibcxxBoostBuilder(f=None, env={}):
         str(compile_args_str) + ' '.join(test_args))
     libcxx_link_args = properties.WithProperties(
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
-    b2_cmd = [b2_path, jobs_flag, 'toolset=clang', build_compile_args, libcxx_link_args]
-    b2_test_cmd = [b2_path, jobs_flag, 'toolset=clang', test_compile_args, libcxx_link_args]
+    b2_cmd = [b2_path, jobs_flag, 'cxxstd=c++1z', 'toolset=clang', build_compile_args, libcxx_link_args]
+    b2_test_cmd = [b2_path, 'test', jobs_flag, 'cxxstd=c++1z', 'toolset=clang', test_compile_args, libcxx_link_args]
 
     # Bootstrap
     f.addStep(buildbot.steps.shell.ShellCommand(
