@@ -18,9 +18,11 @@ reload(LibcxxABIChecker)
 from zorg.buildbot.builders import LibcxxABIChecker
 
 
-def default_args(paths=[]):
+def default_args(paths=[], opts=None):
     p = list(paths)
-    return [LitTestConfiguration(name = 'libcxx', paths=p)]
+    if opts is not None:
+        opts = dict(opts)
+    return [LitTestConfiguration(name = 'libcxx', paths=p, opts=opts)]
 
 
 def getLibcxxBuilder(name, cc='clang', cxx='clang++', cmake_opts={},
@@ -70,7 +72,10 @@ def get_builders():
                 'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/6.0.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=default_args(),
             generate_coverage='/opt/libcxx-coverage/'),
-
+        getLibcxxBuilder('libcxx-modules',
+                         lit_invocations=default_args(opts={
+                            'enable_modules': True
+                         })),
         getLibcxxRangesBuilder('ranges-v3'),
         getLibcxxBoostBuilder('boost')
     ]
