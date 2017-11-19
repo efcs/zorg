@@ -172,7 +172,7 @@ def get_libs_with_tests():
             ("spirit", True),
             ("serialization", False),
             ("geometry", True),
-            ("multiprecision", False),
+            ("multiprecision", True),
             ("math", False)]
 
 def getLibcxxBoostBuilder(f=None, env={}):
