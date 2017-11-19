@@ -84,7 +84,7 @@ def get_builders():
             cmake_opts={
                 'CMAKE_BUILD_TYPE': 'DEBUG',
                 'LIBCXX_GENERATE_COVERAGE': 'ON',
-                'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/4.0.0/lib/linux/libclang_rt.profile-x86_64.a'},
+                'LIBCXX_COVERAGE_LIBRARY': '/usr/local/lib/clang/6.0.0/lib/linux/libclang_rt.profile-x86_64.a'},
             lit_invocations=default_args(),
             generate_coverage='/var/www/html/efcs/efcs/libcxx-coverage'),
 
