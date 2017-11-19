@@ -239,7 +239,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
     env['LIBRARY_PATH'] = boost_lib_path
     b2_path = boost_path = properties.WithProperties(
         '%(builddir)s/boost/b2')
-    compile_args_str = 'cxxflags=-std=c++14 -nostdinc++ ' + \
+    compile_args_str = 'cxxflags=-nostdinc++ ' + \
         '-cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ ' + \
         '-isystem %(builddir)s/llvm/projects/libcxxabi/include/ ' + \
         '-Wno-unused-command-line-argument '
@@ -262,7 +262,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
     libcxx_link_args = properties.WithProperties(
         'linkflags=-stdlib=libc++ -L%(builddir)s/build/lib/ -Wl,-rpath,%(builddir)s/build/lib/')
     b2_cmd = [b2_path, jobs_flag, 'cxxstd=c++1z', 'toolset=clang', build_compile_args, libcxx_link_args]
-    b2_test_cmd = [b2_path, 'test', jobs_flag, 'cxxstd=c++1z', 'toolset=clang', test_compile_args, libcxx_link_args]
+    b2_test_cmd = [b2_path, jobs_flag, 'cxxstd=c++1z', 'toolset=clang', test_compile_args, libcxx_link_args]
 
     # Bootstrap
     f.addStep(buildbot.steps.shell.ShellCommand(
