@@ -59,13 +59,13 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 def addTestSuite(litDesc, env={}):
-    libcxxTestRoot = properties.WithProperties('%(builddir)s/llvm/projects/libcxx/test/libcxx')
+    libcxxTestRoot = properties.WithProperties('%(builddir)s/llvm/projects/libcxx/test')
     litExecutable = properties.WithProperties('%(builddir)s/llvm/utils/lit/lit.py')
 
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
     litCmd = ['%(builddir)s/llvm/utils/lit/lit.py',
-              '-sv', '--show-unsupported', '--show-xfail',  '--threads=24', # FIXME '--threads=%(jobs)s',
+              '-sv', '--show-unsupported', '--show-xfail',  '--threads=%(jobs)s',
               '--param=libcxx_site_config=%(builddir)s/build/projects/libcxx/test/lit.site.cfg']
 
     for key in litDesc.opts:
