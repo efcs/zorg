@@ -247,7 +247,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
         '-Wno-register',
         '-Wno-tautological-constant-compare'
     ]
-    compile_args_str += ' '.join(compile_warnings)
+    compile_args_str += ' '.join(compile_warnings) + ' '
     build_args = ['-ftemplate-backtrace-limit=0']
     test_args = ['-I%(builddir)s/boost/']
     test_args += ['-Wno-unused-local-typedef',
