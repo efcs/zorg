@@ -239,7 +239,10 @@ def getLibcxxBoostBuilder(f=None, env={}):
     env['LIBRARY_PATH'] = boost_lib_path
     b2_path = boost_path = properties.WithProperties(
         '%(builddir)s/boost/b2')
-    compile_args_str = 'cxxflags=-std=c++14 -nostdinc++ -cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ -Wno-unused-command-line-argument '
+    compile_args_str = 'cxxflags=-std=c++14 -nostdinc++ ' + \
+        '-cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ ' + \
+        '-isystem %(builddir)s/llvm/projects/libcxxabi/include/ ' + \
+        '-Wno-unused-command-line-argument '
     build_args = ['-ftemplate-backtrace-limit=0']
     test_args = ['-I%(builddir)s/boost/']
     test_args += ['-Wno-unused-local-typedef',
