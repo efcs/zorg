@@ -243,6 +243,11 @@ def getLibcxxBoostBuilder(f=None, env={}):
         '-cxx-isystem %(builddir)s/llvm/projects/libcxx/include/ ' + \
         '-isystem %(builddir)s/llvm/projects/libcxxabi/include/ ' + \
         '-Wno-unused-command-line-argument '
+    compile_warnings = [
+        '-Wno-register',
+        '-Wno-tautological-constant-compare'
+    ]
+    compile_args_str += ' '.join(compile_warnings)
     build_args = ['-ftemplate-backtrace-limit=0']
     test_args = ['-I%(builddir)s/boost/']
     test_args += ['-Wno-unused-local-typedef',
