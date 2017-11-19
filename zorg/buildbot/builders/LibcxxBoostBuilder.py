@@ -218,7 +218,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
         haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxxabi
-    jobs_flag = '-j12' #properties.WithProperties('-j%(jobs)s')
+    jobs_flag = '-j20' #properties.WithProperties('-j%(jobs)s')
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='build.libcxxabi', command=['make', jobs_flag, 'cxxabi'],
               haltOnFailure=True, workdir=build_path))
