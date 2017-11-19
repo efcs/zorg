@@ -73,7 +73,7 @@ def get_libs_with_tests():
             ("foreach", False),
             ("proto", True),
             ("chrono", False),
-            ("multiprecision", True),
+            ("multiprecision", False),
             ("msm", False),
             ("test", False),
             ("multi_index", False),
