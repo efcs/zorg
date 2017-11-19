@@ -171,7 +171,7 @@ def get_libs_with_tests():
             ("lockfree", False),
             ("python", False),
             ("local_function", True),
-            ("compute", True),
+            ("compute", False),
             ("mpl", False),
             ("rational", False)]
 
