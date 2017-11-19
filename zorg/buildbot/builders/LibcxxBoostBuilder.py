@@ -63,18 +63,19 @@ def get_libs_with_tests():
     return [
             # New Libs
             ("beast", False),
-            ("process", False),
+            ("process", True),
             ("mp11", False),
             ("disjoint_sets", False),
             ("callable_traits", False),
-            ("concept_check", False),
+            ("concept_check", True),
             ("dynamic_bitset", False),
             ("poly_collection", False),
-            ("numeric", False),
-            ("flyweightconversion", False),
-            ("stacktrace", False),
+            ("numeric/conversion", False),
+            ("numeric/interval", False),
+            ("numeric/odeint", False),
+            ("stacktrace", True),
             ("fiber", False),
-            ("date_time", False),
+            ("date_time", True),
             # Old Libs
             ("smart_ptr", True),
             ("flyweight", False),
@@ -313,6 +314,7 @@ def getLibcxxBoostBuilder(f=None, env={}):
         lib_regex = '%(builddir)s/boost/libs/' + lib + '/test'
         if lib == 'wave':
             lib_regex += '/build'
+        elif lib == 'numeric':
         f.addStep(buildbot.steps.shell.ShellCommand(
             name='boost.b2.test.%s' % lib, command=b2_test_cmd,
             haltOnFailure=False, warnOnFailure=expect_fail,
