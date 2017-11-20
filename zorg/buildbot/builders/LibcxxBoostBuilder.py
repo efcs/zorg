@@ -72,7 +72,7 @@ def get_libs_with_tests():
             ("poly_collection", False),
             ("numeric/conversion", False),
             ("numeric/interval", False),
-            ("numeric/odeint", False),
+            ("numeric/odeint", True),
             ("stacktrace", True),
             ("fiber", False),
             ("date_time", True),
